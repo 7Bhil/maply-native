@@ -84,7 +84,7 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
       </MapView>
 
       <TouchableOpacity style={styles.locateBtn} onPress={centerOnUser}>
-        <Text style={styles.locateEmoji}>🎯</Text>
+        <Ionicons name="location" size={20} color="#6366f1" />
       </TouchableOpacity>
     </View>
   );
