@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity, TextInput, Share } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { getCategoryById } from '../data/categories';
 
 export default function PlaceList({ places, search, onSearchChange, onSelectPlace, onDeletePlace }) {
@@ -36,22 +37,22 @@ export default function PlaceList({ places, search, onSearchChange, onSelectPlac
           const cat = getCategoryById(item.category);
           return (
             <TouchableOpacity style={styles.card} onPress={() => onSelectPlace(item)}>
-              <View style={[styles.icon, { backgroundColor: cat.color + '22' }]}>
-                <Text style={styles.emoji}>{cat.emoji}</Text>
+              <View style={[styles.icon, { backgroundColor: cat.color + '15' }]}>
+                <Ionicons name={cat.icon || 'location'} size={20} color={cat.color} />
               </View>
               <View style={styles.info}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                   <Text style={styles.name}>{item.name}</Text>
-                  <Text style={{ fontSize: 10 }}>{'⭐️'.repeat(item.rating || 3)}</Text>
+                  <Text style={{ fontSize: 10 }}>{'⭐️'.repeat(Math.max(0, Math.floor(item.rating || 3)))}</Text>
                 </View>
                 <Text style={styles.category}>{cat.label}</Text>
               </View>
-              <View style={styles.actions}>
+               <View style={styles.actions}>
                 <TouchableOpacity style={styles.share} onPress={() => handleShare(item)}>
-                  <Text style={styles.actionEmoji}>📤</Text>
+                  <Ionicons name="share-outline" size={20} color="#64748b" />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.delete} onPress={() => onDeletePlace(item.id)}>
-                  <Text style={styles.deleteText}>✕</Text>
+                  <Ionicons name="trash-outline" size={20} color="#cbd5e1" />
                 </TouchableOpacity>
               </View>
             </TouchableOpacity>

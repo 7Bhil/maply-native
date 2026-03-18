@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, Modal, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, Modal, TextInput, TouchableOpacity, ScrollView, Keyboard } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { CATEGORIES } from '../data/categories';
 
 export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
@@ -20,7 +21,11 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
     }
     setLoadingAddr(true);
     try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&addressdetails=1`);
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&addressdetails=1`, {
+        headers: {
+          'User-Agent': 'Maply-Mobile-App-User'
+        }
+      });
       const data = await res.json();
       setAddressResults(data);
     } catch (e) {
@@ -31,11 +36,13 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
   };
 
   const handleSelectAddr = (item) => {
+    Keyboard.dismiss();
+    const lat = parseFloat(item.lat);
+    const lng = parseFloat(item.lon);
+    if (isNaN(lat) || isNaN(lng)) return;
+
     setName(item.display_name.split(',')[0]);
-    setCustomCoords({
-      latitude: parseFloat(item.lat),
-      longitude: parseFloat(item.lon),
-    });
+    setCustomCoords({ latitude: lat, longitude: lng });
     setAddressResults([]);
     setAddressSearch('');
   };
@@ -116,7 +123,7 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
                   ]}
                   onPress={() => setCategory(cat.id)}
                 >
-                  <Text style={[styles.catEmoji, category === cat.id && { color: '#fff' }]}>{cat.emoji}</Text>
+                  <Ionicons name={cat.icon || 'location-outline'} size={14} color={category === cat.id ? '#fff' : '#64748b'} style={{ marginRight: 4 }} />
                   <Text style={[styles.catLabel, category === cat.id && { color: '#fff' }]}>{cat.label}</Text>
                 </TouchableOpacity>
               ))}
@@ -207,8 +214,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   catEmoji: {
-    fontSize: 16,
-    marginRight: 4,
+    display: 'none',
   },
   catLabel: {
     fontSize: 12,

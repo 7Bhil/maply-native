@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, SafeAreaView, StatusBar, TouchableOpacity, Text, KeyboardAvoidingView, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import AppMapView from './src/components/MapView';
 import AddPlaceModal from './src/components/AddPlaceModal';
 import PlaceList from './src/components/PlaceList';
@@ -53,7 +54,10 @@ export default function App() {
           
           {/* Floating instructions */}
           <View style={styles.hintContainer} pointerEvents="none">
-            <Text style={styles.hint}>Appui long pour ajouter 📍</Text>
+          <View style={styles.hint}>
+            <Ionicons name="information-circle-outline" size={14} color="#6366f1" style={{ marginRight: 6 }} />
+            <Text style={styles.hintText}>Appui long pour ajouter un lieu</Text>
+          </View>
           </View>
         </View>
 
@@ -95,17 +99,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   hint: {
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 20,
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#6366f1',
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  hintText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1e293b',
   },
 });
