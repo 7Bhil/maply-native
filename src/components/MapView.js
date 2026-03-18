@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Alert, Linking, Platform } from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { getCategoryById } from '../data/categories';
@@ -58,17 +58,23 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
             <Marker
               key={place.id}
               coordinate={{ latitude: place.lat, longitude: place.lng }}
-              pinColor={cat.color}
+              tracksViewChanges={false}
               onPress={() => onSelectPlace(place)}
             >
               <View style={[styles.marker, { backgroundColor: cat.color }]}>
                 <Text style={styles.markerEmoji}>{cat.emoji}</Text>
               </View>
-              <Callout>
+              <Callout onPress={() => {
+                const url = Platform.OS === 'ios' 
+                  ? `maps://app?daddr=${place.lat},${place.lng}`
+                  : `google.navigation:q=${place.lat},${place.lng}`;
+                Linking.openURL(url);
+              }}>
                 <View style={styles.callout}>
                   <Text style={styles.calloutTitle}>{place.name}</Text>
                   <Text style={styles.calloutCategory}>{cat.label}</Text>
                   {place.description ? <Text style={styles.calloutDesc}>{place.description}</Text> : null}
+                  <Text style={styles.calloutNavHint}>Tap pour l'itinéraire 🚗</Text>
                 </View>
               </Callout>
             </Marker>
@@ -136,5 +142,11 @@ const styles = StyleSheet.create({
   calloutDesc: {
     fontSize: 12,
     marginTop: 2,
+  },
+  calloutNavHint: {
+    fontSize: 10,
+    color: '#6366f1',
+    marginTop: 5,
+    fontWeight: 'bold',
   },
 });

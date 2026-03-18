@@ -6,6 +6,39 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('other');
+  const [rating, setRating] = useState(3);
+  const [addressSearch, setAddressSearch] = useState('');
+  const [addressResults, setAddressResults] = useState([]);
+  const [loadingAddr, setLoadingAddr] = useState(false);
+  const [customCoords, setCustomCoords] = useState(null);
+
+  const searchAddress = async (query) => {
+    setAddressSearch(query);
+    if (query.length < 3) {
+      setAddressResults([]);
+      return;
+    }
+    setLoadingAddr(true);
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&addressdetails=1`);
+      const data = await res.json();
+      setAddressResults(data);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setLoadingAddr(false);
+    }
+  };
+
+  const handleSelectAddr = (item) => {
+    setName(item.display_name.split(',')[0]);
+    setCustomCoords({
+      latitude: parseFloat(item.lat),
+      longitude: parseFloat(item.lon),
+    });
+    setAddressResults([]);
+    setAddressSearch('');
+  };
 
   const handleSubmit = () => {
     if (!name.trim()) return;
@@ -13,12 +46,15 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
       name: name.trim(),
       description: description.trim(),
       category,
-      lat: coords.latitude,
-      lng: coords.longitude,
+      lat: customCoords?.latitude || coords.latitude,
+      lng: customCoords?.longitude || coords.longitude,
+      rating,
     });
     setName('');
     setDescription('');
     setCategory('other');
+    setRating(3);
+    setCustomCoords(null);
   };
 
   return (
@@ -27,8 +63,28 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
         <View style={styles.modal}>
           <Text style={styles.title}>Ajouter un lieu</Text>
           <Text style={styles.coords}>
-            📍 {coords?.latitude?.toFixed(4)}, {coords?.longitude?.toFixed(4)}
+            📍 {(customCoords?.latitude || coords?.latitude)?.toFixed(4)}, {(customCoords?.longitude || coords?.longitude)?.toFixed(4)}
           </Text>
+
+          <View style={{ marginBottom: 15 }}>
+            <Text style={styles.label}>Rechercher une adresse</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ex: Tour Eiffel, Paris..."
+              value={addressSearch}
+              onChangeText={searchAddress}
+            />
+            {loadingAddr && <Text style={{ fontSize: 10, color: '#6366f1', marginTop: 2 }}>Recherche...</Text>}
+            {addressResults.length > 0 && (
+              <View style={styles.results}>
+                {addressResults.map((item, idx) => (
+                  <TouchableOpacity key={idx} style={styles.resultItem} onPress={() => handleSelectAddr(item)}>
+                    <Text numberOfLines={1} style={styles.resultText}>{item.display_name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
 
           <ScrollView style={styles.form}>
             <Text style={styles.label}>Nom du lieu *</Text>
@@ -62,6 +118,15 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
                 >
                   <Text style={[styles.catEmoji, category === cat.id && { color: '#fff' }]}>{cat.emoji}</Text>
                   <Text style={[styles.catLabel, category === cat.id && { color: '#fff' }]}>{cat.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.label}>Note</Text>
+            <View style={{ flexDirection: 'row', gap: 10, marginTop: 5 }}>
+              {[1, 2, 3, 4, 5].map((s) => (
+                <TouchableOpacity key={s} onPress={() => setRating(s)}>
+                  <Text style={{ fontSize: 24, opacity: rating >= s ? 1 : 0.2 }}>⭐️</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -176,5 +241,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  results: {
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    marginTop: 5,
+    borderWidth: 1,
+    borderColor: '#eee',
+    overflow: 'hidden',
+  },
+  resultItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  resultText: {
+    fontSize: 12,
+    color: '#333',
   },
 });

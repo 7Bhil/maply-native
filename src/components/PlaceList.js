@@ -40,7 +40,10 @@ export default function PlaceList({ places, search, onSearchChange, onSelectPlac
                 <Text style={styles.emoji}>{cat.emoji}</Text>
               </View>
               <View style={styles.info}>
-                <Text style={styles.name}>{item.name}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                  <Text style={styles.name}>{item.name}</Text>
+                  <Text style={{ fontSize: 10 }}>{'⭐️'.repeat(item.rating || 3)}</Text>
+                </View>
                 <Text style={styles.category}>{cat.label}</Text>
               </View>
               <View style={styles.actions}>
