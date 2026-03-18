@@ -1,6 +1,8 @@
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, View, SafeAreaView, StatusBar, TouchableOpacity, Text, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, View, StatusBar, TouchableOpacity, Text, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
 import AppMapView from './src/components/MapView';
 import AddPlaceModal from './src/components/AddPlaceModal';
 import PlaceList from './src/components/PlaceList';
@@ -13,6 +15,17 @@ export default function App() {
   const [pendingCoords, setPendingCoords] = useState(null);
   const [search, setSearch] = useState('');
   const [showList, setShowList] = useState(true);
+  const [userLocation, setUserLocation] = useState(null);
+
+  React.useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        let location = await Location.getCurrentPositionAsync({});
+        setUserLocation(location.coords);
+      }
+    })();
+  }, []);
 
   const handleMapLongPress = useCallback((coords) => {
     setPendingCoords(coords);
@@ -37,8 +50,9 @@ export default function App() {
   }, [deletePlace, selectedPlace]);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" />
       
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
@@ -78,6 +92,8 @@ export default function App() {
              onSearchChange={setSearch}
              onSelectPlace={handleSelectPlace}
              onDeletePlace={handleDeletePlace}
+             selectedPlace={selectedPlace}
+             userLocation={userLocation}
            />
          )}
       </KeyboardAvoidingView>
@@ -89,7 +105,8 @@ export default function App() {
         onConfirm={handleConfirmAdd}
         onClose={() => setModalVisible(false)}
       />
-    </SafeAreaView>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 

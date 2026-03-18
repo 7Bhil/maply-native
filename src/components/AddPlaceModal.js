@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, Modal, TextInput, TouchableOpacity, ScrollView, Keyboard } from 'react-native';
+import { StyleSheet, View, Text, Modal, TextInput, TouchableOpacity, ScrollView, Keyboard, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { CATEGORIES } from '../data/categories';
 
 export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
@@ -8,6 +9,8 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('other');
   const [rating, setRating] = useState(3);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [photo, setPhoto] = useState(null);
   const [addressSearch, setAddressSearch] = useState('');
   const [addressResults, setAddressResults] = useState([]);
   const [loadingAddr, setLoadingAddr] = useState(false);
@@ -47,6 +50,19 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
     setAddressSearch('');
   };
 
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.5,
+    });
+
+    if (!result.canceled) {
+      setPhoto(result.assets[0].uri);
+    }
+  };
+
   const handleSubmit = () => {
     if (!name.trim()) return;
     onConfirm({
@@ -56,11 +72,15 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
       lat: customCoords?.latitude || coords.latitude,
       lng: customCoords?.longitude || coords.longitude,
       rating,
+      isFavorite,
+      image: photo,
     });
     setName('');
     setDescription('');
     setCategory('other');
     setRating(3);
+    setIsFavorite(false);
+    setPhoto(null);
     setCustomCoords(null);
   };
 
@@ -130,12 +150,35 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
             </View>
 
             <Text style={styles.label}>Note</Text>
-            <View style={{ flexDirection: 'row', gap: 10, marginTop: 5 }}>
+            <View style={{ flexDirection: 'row', gap: 10, marginTop: 5, alignItems: 'center' }}>
               {[1, 2, 3, 4, 5].map((s) => (
                 <TouchableOpacity key={s} onPress={() => setRating(s)}>
                   <Text style={{ fontSize: 24, opacity: rating >= s ? 1 : 0.2 }}>⭐️</Text>
                 </TouchableOpacity>
               ))}
+              <TouchableOpacity 
+                style={{ marginLeft: 20, flexDirection: 'row', alignItems: 'center' }}
+                onPress={() => setIsFavorite(!isFavorite)}
+              >
+                <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={24} color="#f43f5e" />
+                <Text style={{ marginLeft: 5, fontSize: 12, fontWeight: '600', color: '#64748b' }}>Coup de cœur</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.label}>Photo</Text>
+            <View style={{ flexDirection: 'row', gap: 10, marginTop: 5 }}>
+              <TouchableOpacity style={styles.photoBtn} onPress={pickImage}>
+                <Ionicons name="camera-outline" size={24} color="#6366f1" />
+                <Text style={styles.photoBtnText}>{photo ? 'Changer' : 'Ajouter une photo'}</Text>
+              </TouchableOpacity>
+              {photo && (
+                <View style={styles.photoPreviewContainer}>
+                  <Image source={{ uri: photo }} style={styles.photoPreview} />
+                  <TouchableOpacity style={styles.removePhoto} onPress={() => setPhoto(null)}>
+                    <Ionicons name="close-circle" size={20} color="#f43f5e" />
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
           </ScrollView>
 
@@ -264,5 +307,38 @@ const styles = StyleSheet.create({
   resultText: {
     fontSize: 12,
     color: '#333',
+  },
+  photoBtn: {
+    flex: 1,
+    height: 80,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderStyle: 'dashed',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+  },
+  photoBtnText: {
+    fontSize: 12,
+    color: '#6366f1',
+    marginTop: 4,
+    fontWeight: '600',
+  },
+  photoPreviewContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 10,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  photoPreview: {
+    width: '100%',
+    height: '100%',
+  },
+  removePhoto: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
   },
 });

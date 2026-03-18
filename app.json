@@ -24,6 +24,21 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysPermission": "Autoriser Maply à accéder à votre position en permanence pour les alertes à proximité.",
+          "locationWhenInUsePermission": "Autoriser Maply à accéder à votre position pour afficher votre position sur la carte."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "L'application a besoin d'accéder à vos photos pour enregistrer les images des lieux."
+        }
+      ]
+    ]
   }
 }

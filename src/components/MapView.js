@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Alert, Linking, Platform } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Alert, Linking, Platform, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -78,7 +78,13 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
                 Linking.openURL(url);
               }}>
                 <View style={styles.callout}>
-                  <Text style={styles.calloutTitle}>{place.name}</Text>
+                  {place.image && (
+                    <Image source={{ uri: place.image }} style={styles.calloutImage} />
+                  )}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <Text style={styles.calloutTitle}>{place.name}</Text>
+                    {place.isFavorite && <Ionicons name="heart" size={12} color="#f43f5e" />}
+                  </View>
                   <Text style={styles.calloutCategory}>{cat.label}</Text>
                   {place.description ? <Text style={styles.calloutDesc}>{place.description}</Text> : null}
                   <Text style={styles.calloutNavHint}>Tap pour l'itinéraire 🚗</Text>
@@ -142,6 +148,12 @@ const styles = StyleSheet.create({
   calloutTitle: {
     fontWeight: 'bold',
     fontSize: 14,
+  },
+  calloutImage: {
+    width: 140,
+    height: 80,
+    borderRadius: 8,
+    marginBottom: 5,
   },
   calloutCategory: {
     fontSize: 12,
