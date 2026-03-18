@@ -7,6 +7,7 @@ import { getCategoryById } from '../data/categories';
 
 export default function AppMapView({ places, selectedPlace, onSelectPlace, onMapLongPress }) {
   const mapRef = React.useRef(null);
+  const markerRefs = React.useRef({});
 
   const centerOnUser = async () => {
     let { status } = await Location.requestForegroundPermissionsAsync();
@@ -34,6 +35,11 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
       }, 1000);
+
+      // Auto-open callout
+      setTimeout(() => {
+        markerRefs.current[selectedPlace.id]?.showCallout();
+      }, 1100);
     }
   }, [selectedPlace]);
 
@@ -58,8 +64,8 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
           return (
             <Marker
               key={place.id}
+              ref={(el) => (markerRefs.current[place.id] = el)}
               coordinate={{ latitude: place.lat, longitude: place.lng }}
-              tracksViewChanges={false}
               onPress={() => onSelectPlace(place)}
             >
               <View style={[styles.marker, { backgroundColor: cat.color }]}>
@@ -112,6 +118,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 5,
     elevation: 4,
+    zIndex: 10,
   },
   locateEmoji: {
     fontSize: 20,

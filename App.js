@@ -12,6 +12,7 @@ export default function App() {
   const [modalVisible, setModalVisible] = useState(false);
   const [pendingCoords, setPendingCoords] = useState(null);
   const [search, setSearch] = useState('');
+  const [showList, setShowList] = useState(true);
 
   const handleMapLongPress = useCallback((coords) => {
     setPendingCoords(coords);
@@ -52,23 +53,33 @@ export default function App() {
             onMapLongPress={handleMapLongPress}
           />
           
-          {/* Floating instructions */}
-          <View style={styles.hintContainer} pointerEvents="none">
-          <View style={styles.hint}>
-            <Ionicons name="information-circle-outline" size={14} color="#6366f1" style={{ marginRight: 6 }} />
-            <Text style={styles.hintText}>Appui long pour ajouter un lieu</Text>
-          </View>
-          </View>
-        </View>
+           {/* Floating instructions */}
+           <View style={styles.hintContainer} pointerEvents="none">
+             <View style={styles.hint}>
+               <Ionicons name="information-circle-outline" size={14} color="#6366f1" style={{ marginRight: 6 }} />
+               <Text style={styles.hintText}>Appui long pour ajouter un lieu</Text>
+             </View>
+           </View>
 
-        {/* Place List (Bottom Panel) */}
-        <PlaceList
-          places={places}
-          search={search}
-          onSearchChange={setSearch}
-          onSelectPlace={handleSelectPlace}
-          onDeletePlace={handleDeletePlace}
-        />
+           {/* List Toggle Button */}
+           <TouchableOpacity 
+             style={[styles.toggleBtn, { bottom: 80 }]} 
+             onPress={() => setShowList(!showList)}
+           >
+             <Ionicons name={showList ? "chevron-down" : "list"} size={20} color="#6366f1" />
+           </TouchableOpacity>
+         </View>
+
+         {/* Place List (Bottom Panel) */}
+         {showList && (
+           <PlaceList
+             places={places}
+             search={search}
+             onSearchChange={setSearch}
+             onSelectPlace={handleSelectPlace}
+             onDeletePlace={handleDeletePlace}
+           />
+         )}
       </KeyboardAvoidingView>
 
       {/* Add Place Modal */}
@@ -115,5 +126,20 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: '#1e293b',
+  },
+  toggleBtn: {
+    position: 'absolute',
+    right: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 4,
   },
 });
