@@ -6,6 +6,12 @@ export const CATEGORIES = [
   { id: 'shopping',   label: 'Shopping',   emoji: '🛍️', color: '#ec4899' },
   { id: 'sport',      label: 'Sport',      emoji: '🏋️', color: '#3b82f6' },
   { id: 'hotel',      label: 'Hébergement',emoji: '🏨', color: '#14b8a6' },
+  { id: 'transport',  label: 'Transport',  emoji: '🚉', color: '#64748b' },
+  { id: 'health',     label: 'Santé',      emoji: '🏥', color: '#ef4444' },
+  { id: 'education',  label: 'Éducation',  emoji: '🎓', color: '#f59e0b' },
+  { id: 'work',       label: 'Travail',    emoji: '💼', color: '#475569' },
+  { id: 'fun',        label: 'Divertissement', emoji: '🎡', color: '#d946ef' },
+  { id: 'parking',    label: 'Parking',    emoji: '🅿️', color: '#334155' },
   { id: 'other',      label: 'Autre',      emoji: '📍', color: '#6366f1' },
 ];
 

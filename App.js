@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, View, SafeAreaView, StatusBar, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, View, SafeAreaView, StatusBar, TouchableOpacity, Text, KeyboardAvoidingView, Platform } from 'react-native';
 import AppMapView from './src/components/MapView';
 import AddPlaceModal from './src/components/AddPlaceModal';
 import PlaceList from './src/components/PlaceList';
@@ -38,29 +38,34 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
       
-      {/* Map View */}
-      <View style={styles.mapContainer}>
-        <AppMapView
-          places={places}
-          selectedPlace={selectedPlace}
-          onSelectPlace={handleSelectPlace}
-          onMapLongPress={handleMapLongPress}
-        />
-        
-        {/* Floating instructions */}
-        <View style={styles.hintContainer} pointerEvents="none">
-          <Text style={styles.hint}>Appui long pour ajouter 📍</Text>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+        style={{ flex: 1 }}
+      >
+        {/* Map View */}
+        <View style={styles.mapContainer}>
+          <AppMapView
+            places={places}
+            selectedPlace={selectedPlace}
+            onSelectPlace={handleSelectPlace}
+            onMapLongPress={handleMapLongPress}
+          />
+          
+          {/* Floating instructions */}
+          <View style={styles.hintContainer} pointerEvents="none">
+            <Text style={styles.hint}>Appui long pour ajouter 📍</Text>
+          </View>
         </View>
-      </View>
 
-      {/* Place List (Bottom Panel) */}
-      <PlaceList
-        places={places}
-        search={search}
-        onSearchChange={setSearch}
-        onSelectPlace={handleSelectPlace}
-        onDeletePlace={handleDeletePlace}
-      />
+        {/* Place List (Bottom Panel) */}
+        <PlaceList
+          places={places}
+          search={search}
+          onSearchChange={setSearch}
+          onSelectPlace={handleSelectPlace}
+          onDeletePlace={handleDeletePlace}
+        />
+      </KeyboardAvoidingView>
 
       {/* Add Place Modal */}
       <AddPlaceModal

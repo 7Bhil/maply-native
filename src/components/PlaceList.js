@@ -1,11 +1,23 @@
 import React from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, TextInput } from 'react-native';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity, TextInput, Share } from 'react-native';
 import { getCategoryById } from '../data/categories';
 
 export default function PlaceList({ places, search, onSearchChange, onSelectPlace, onDeletePlace }) {
   const filtered = places.filter((p) => 
     !search || p.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleShare = async (place) => {
+    try {
+      const message = `Regarde ce lieu sur Maply : ${place.name}\n${place.description || ''}\nCoordonnées : ${place.lat}, ${place.lng}`;
+      await Share.share({
+        message,
+        title: place.name,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -31,9 +43,14 @@ export default function PlaceList({ places, search, onSearchChange, onSelectPlac
                 <Text style={styles.name}>{item.name}</Text>
                 <Text style={styles.category}>{cat.label}</Text>
               </View>
-              <TouchableOpacity style={styles.delete} onPress={() => onDeletePlace(item.id)}>
-                <Text style={styles.deleteText}>✕</Text>
-              </TouchableOpacity>
+              <View style={styles.actions}>
+                <TouchableOpacity style={styles.share} onPress={() => handleShare(item)}>
+                  <Text style={styles.actionEmoji}>📤</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.delete} onPress={() => onDeletePlace(item.id)}>
+                  <Text style={styles.deleteText}>✕</Text>
+                </TouchableOpacity>
+              </View>
             </TouchableOpacity>
           );
         }}
@@ -103,12 +120,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
   },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  share: {
+    padding: 10,
+    marginRight: 5,
+  },
   delete: {
     padding: 10,
   },
   deleteText: {
     fontSize: 18,
     color: '#ccc',
+  },
+  actionEmoji: {
+    fontSize: 18,
   },
   empty: {
     padding: 40,
