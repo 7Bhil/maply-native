@@ -70,10 +70,10 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
             description="Tu es ici !"
             pinColor="#6366f1"
           >
-            <View style={[styles.marker, { backgroundColor: '#6366f1' }]}>
+            <View style={[styles.marker, { backgroundColor: '#6366f1' }]} pointerEvents="none">
               <Ionicons name="person" size={16} color="#fff" />
             </View>
-            <Callout tooltip={true}>
+            <Callout>
               <View style={styles.calloutBubble}>
                 <View style={styles.calloutContent}>
                   <View style={styles.calloutHeader}>
@@ -107,11 +107,10 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
               title={place.name}
               description={place.description}
             >
-              <View style={[styles.marker, { backgroundColor: cat.color }]}>
+              <View style={[styles.marker, { backgroundColor: cat.color }]} pointerEvents="none">
                 <Ionicons name={cat.icon?.replace('-outline', '') || 'location'} size={16} color="#fff" />
               </View>
               <Callout 
-                tooltip={true}
                 onPress={() => {
                   const url = Platform.OS === 'ios' 
                     ? `maps://app?daddr=${place.lat},${place.lng}`
