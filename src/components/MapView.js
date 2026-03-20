@@ -104,10 +104,11 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
               ref={(el) => (markerRefs.current[place.id] = el)}
               coordinate={{ latitude: place.lat, longitude: place.lng }}
               onPress={() => {
+                // Alert.alert('Debug', 'Marker tap: ' + place.name);
                 onSelectPlace(place);
                 setTimeout(() => {
                   markerRefs.current[place.id]?.showCallout();
-                }, 100);
+                }, 200);
               }}
               title={place.name}
               description={place.description}
@@ -116,7 +117,6 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
                 <Ionicons name={cat.icon?.replace('-outline', '') || 'location'} size={16} color="#fff" />
               </View>
               <Callout 
-                tooltip={true}
                 onPress={() => {
                   const url = Platform.OS === 'ios' 
                     ? `maps://app?daddr=${place.lat},${place.lng}`
@@ -124,20 +124,15 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
                   Linking.openURL(url);
                 }}
               >
-                <View style={styles.calloutBubble}>
-                  <View style={styles.calloutContent}>
-                    <View style={styles.calloutHeader}>
-                      <View style={[styles.calloutIconContainer, { backgroundColor: cat.color + '22' }]}>
-                        <Ionicons name={cat.icon?.replace('-outline', '') || 'location'} size={18} color={cat.color} />
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <Text style={styles.calloutTitle} numberOfLines={1}>{place.name}</Text>
-                          {place.isFavorite && <Ionicons name="heart" size={14} color="#f43f5e" />}
-                        </View>
-                        <Text style={[styles.calloutCategory, { color: cat.color }]}>{cat.label}</Text>
-                      </View>
-                    </View>
+                <View style={styles.calloutSimple}>
+                  <Text style={styles.calloutTitleSimple}>{place.name}</Text>
+                  <Text style={styles.calloutCategorySimple}>{cat.label}</Text>
+                  {place.description ? (
+                    <Text style={styles.calloutDescSimple} numberOfLines={3}>{place.description}</Text>
+                  ) : null}
+                  <Text style={styles.calloutNavHintSimple}>Tap pour itinéraire 🚗</Text>
+                </View>
+              </Callout>
 
                     <View style={styles.calloutRating}>
                       <Text style={{ fontSize: 16 }}>{'⭐️'.repeat(Math.round(place.rating || 3))}</Text>
@@ -212,49 +207,33 @@ const styles = StyleSheet.create({
   markerEmoji: {
     fontSize: 16,
   },
-  calloutBubble: {
-    width: 260,
-    alignItems: 'center',
+  calloutSimple: {
+    width: 200,
+    padding: 2,
+    backgroundColor: '#fff',
   },
-  calloutContent: {
-    backgroundColor: '#1e293b',
-    borderRadius: 16,
-    padding: 12,
-    width: '100%',
-    minHeight: 100, // Important for tooltip=true on some Androids
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
-  calloutHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 12,
-  },
-  calloutIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
-  calloutTitle: {
-    fontWeight: '700',
+  calloutTitleSimple: {
+    fontWeight: 'bold',
     fontSize: 16,
-    color: '#f8fafc',
-    flex: 1,
+    color: '#1e293b',
+    marginBottom: 2,
   },
-  calloutCategory: {
+  calloutCategorySimple: {
     fontSize: 12,
-    fontWeight: '600',
-    marginTop: -2,
+    color: '#6366f1',
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  calloutDescSimple: {
+    fontSize: 13,
+    color: '#64748b',
+    lineHeight: 18,
+  },
+  calloutNavHintSimple: {
+    fontSize: 11,
+    color: '#6366f1',
+    marginTop: 8,
+    fontWeight: '700',
   },
   calloutRating: {
     flexDirection: 'row',
