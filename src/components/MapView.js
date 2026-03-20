@@ -73,7 +73,7 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
             <View style={[styles.marker, { backgroundColor: '#6366f1' }]} pointerEvents="none">
               <Ionicons name="person" size={16} color="#fff" />
             </View>
-            <Callout>
+            <Callout tooltip={true}>
               <View style={styles.calloutBubble}>
                 <View style={styles.calloutContent}>
                   <View style={styles.calloutHeader}>
@@ -111,6 +111,7 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
                 <Ionicons name={cat.icon?.replace('-outline', '') || 'location'} size={16} color="#fff" />
               </View>
               <Callout 
+                tooltip={true}
                 onPress={() => {
                   const url = Platform.OS === 'ios' 
                     ? `maps://app?daddr=${place.lat},${place.lng}`
@@ -211,15 +212,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   calloutContent: {
-    backgroundColor: '#1e293b', // Dark theme matching screenshot
+    backgroundColor: '#1e293b',
     borderRadius: 16,
     padding: 12,
     width: '100%',
+    minHeight: 100, // Important for tooltip=true on some Androids
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
     shadowRadius: 20,
     elevation: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   calloutHeader: {
     flexDirection: 'row',
