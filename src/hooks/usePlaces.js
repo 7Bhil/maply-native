@@ -66,6 +66,36 @@ export function usePlaces() {
       ...placeData,
     };
 
+    let imageUrl = placeData.image;
+
+    // Supabase Storage upload if image URI is provided
+    if (placeData.image && placeData.image.startsWith('file://')) {
+      try {
+        const response = await fetch(placeData.image);
+        const blob = await response.blob();
+        const fileName = `${newPlace.id}.jpg`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('place_photos')
+          .upload(fileName, blob, {
+            contentType: 'image/jpeg',
+            cacheControl: '3600',
+            upsert: true
+          });
+
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage
+            .from('place_photos')
+            .getPublicUrl(fileName);
+          imageUrl = urlData.publicUrl;
+        } else {
+          console.error('Upload Error:', uploadError.message);
+        }
+      } catch (err) {
+        console.error('Image upload crash:', err);
+      }
+    }
+
     // Sync to Supabase
     try {
       const { data, error } = await supabase
@@ -79,7 +109,7 @@ export function usePlaces() {
           lng: newPlace.lng,
           rating: newPlace.rating,
           is_favorite: newPlace.isFavorite,
-          image_url: newPlace.image,
+          image_url: imageUrl,
           created_at: newPlace.createdAt,
         }])
         .select();
