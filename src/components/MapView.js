@@ -103,7 +103,12 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
               key={place.id}
               ref={(el) => (markerRefs.current[place.id] = el)}
               coordinate={{ latitude: place.lat, longitude: place.lng }}
-              onPress={() => onSelectPlace(place)}
+              onPress={() => {
+                onSelectPlace(place);
+                setTimeout(() => {
+                  markerRefs.current[place.id]?.showCallout();
+                }, 100);
+              }}
               title={place.name}
               description={place.description}
             >
