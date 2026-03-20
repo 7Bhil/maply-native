@@ -67,6 +67,8 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
               ref={(el) => (markerRefs.current[place.id] = el)}
               coordinate={{ latitude: place.lat, longitude: place.lng }}
               onPress={() => onSelectPlace(place)}
+              title={place.name}
+              description={place.description}
             >
               <View style={[styles.marker, { backgroundColor: cat.color }]}>
                 <Ionicons name={cat.icon?.replace('-outline', '') || 'location'} size={16} color="#fff" />
