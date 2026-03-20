@@ -59,6 +59,43 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
           longitudeDelta: 0.0421,
         }}
       >
+        {/* User Location Marker with Bubble */}
+        {userLocation && (
+          <Marker
+            coordinate={{ 
+              latitude: userLocation.latitude, 
+              longitude: userLocation.longitude 
+            }}
+            title="Ma Position"
+            description="Tu es ici !"
+            pinColor="#6366f1"
+          >
+            <View style={[styles.marker, { backgroundColor: '#6366f1' }]}>
+              <Ionicons name="person" size={16} color="#fff" />
+            </View>
+            <Callout tooltip={true}>
+              <View style={styles.calloutBubble}>
+                <View style={styles.calloutContent}>
+                  <View style={styles.calloutHeader}>
+                    <View style={[styles.calloutIconContainer, { backgroundColor: '#6366f122' }]}>
+                      <Ionicons name="person" size={18} color="#6366f1" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.calloutTitle}>Ma Position</Text>
+                      <Text style={[styles.calloutCategory, { color: '#6366f1' }]}>Utilisateur</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.calloutDesc}>C'est ici que tu te trouves actuellement sur la carte.</Text>
+                  <View style={styles.calloutFooter}>
+                    <Text style={styles.calloutFooterText}>{userLocation.latitude.toFixed(4)}, {userLocation.longitude.toFixed(4)}</Text>
+                    <Text style={styles.calloutFooterText}>Maintenant</Text>
+                  </View>
+                </View>
+                <View style={[styles.calloutArrow, { borderTopColor: '#1e293b' }]} />
+              </View>
+            </Callout>
+          </Marker>
+        )}
         {places.map((place) => {
           const cat = getCategoryById(place.category);
           return (
