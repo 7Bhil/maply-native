@@ -84,23 +84,38 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
               >
                 <View style={styles.calloutBubble}>
                   <View style={styles.calloutContent}>
+                    <View style={styles.calloutHeader}>
+                      <View style={[styles.calloutIconContainer, { backgroundColor: cat.color + '22' }]}>
+                        <Ionicons name={cat.icon?.replace('-outline', '') || 'location'} size={18} color={cat.color} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <Text style={styles.calloutTitle} numberOfLines={1}>{place.name}</Text>
+                          {place.isFavorite && <Ionicons name="heart" size={14} color="#f43f5e" />}
+                        </View>
+                        <Text style={[styles.calloutCategory, { color: cat.color }]}>{cat.label}</Text>
+                      </View>
+                    </View>
+
+                    <View style={styles.calloutRating}>
+                      <Text style={{ fontSize: 16 }}>{'⭐️'.repeat(Math.round(place.rating || 3))}</Text>
+                    </View>
+
+                    {place.description ? (
+                      <Text style={styles.calloutDesc} numberOfLines={4}>{place.description}</Text>
+                    ) : null}
+
                     {place.image && (
                       <Image source={{ uri: place.image }} style={styles.calloutImage} />
                     )}
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                      <Text style={styles.calloutTitle}>{place.name}</Text>
-                      {place.isFavorite && <Ionicons name="heart" size={14} color="#f43f5e" />}
-                    </View>
-                    <Text style={styles.calloutCategory}>{cat.label}</Text>
-                    {place.description ? (
-                      <Text style={styles.calloutDesc} numberOfLines={3}>{place.description}</Text>
-                    ) : null}
+
                     <View style={styles.calloutFooter}>
-                      <Ionicons name="navigate-circle" size={14} color="#6366f1" />
-                      <Text style={styles.calloutNavHint}>Itinéraire</Text>
+                      <Text style={styles.calloutFooterText}>{place.lat.toFixed(4)}, {place.lng.toFixed(4)}</Text>
+                      <Text style={styles.calloutFooterText}>
+                        {new Date(place.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                      </Text>
                     </View>
                   </View>
-                  {/* Arrow for the bubble */}
                   <View style={styles.calloutArrow} />
                 </View>
               </Callout>
@@ -156,71 +171,86 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   calloutBubble: {
+    width: 260,
     alignItems: 'center',
-    justifyContent: 'center',
-    width: 200,
   },
   calloutContent: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 10,
+    backgroundColor: '#1e293b', // Dark theme matching screenshot
+    borderRadius: 16,
+    padding: 12,
     width: '100%',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  calloutHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 12,
+  },
+  calloutIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   calloutTitle: {
-    fontWeight: 'bold',
-    fontSize: 15,
-    color: '#1e293b',
+    fontWeight: '700',
+    fontSize: 16,
+    color: '#f8fafc',
+    flex: 1,
+  },
+  calloutCategory: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: -2,
+  },
+  calloutRating: {
+    flexDirection: 'row',
+    marginBottom: 10,
+  },
+  calloutDesc: {
+    fontSize: 14,
+    color: '#94a3b8',
+    lineHeight: 20,
+    marginBottom: 12,
   },
   calloutImage: {
     width: '100%',
-    height: 100,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  calloutCategory: {
-    fontSize: 11,
-    color: '#6366f1',
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 4,
-  },
-  calloutDesc: {
-    fontSize: 13,
-    color: '#475569',
-    lineHeight: 18,
-    marginBottom: 8,
+    height: 120,
+    borderRadius: 10,
+    marginBottom: 12,
+    backgroundColor: '#0f172a',
   },
   calloutFooter: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
+    justifyContent: 'space-between',
     paddingTop: 8,
-    marginTop: 2,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.05)',
   },
-  calloutNavHint: {
+  calloutFooterText: {
     fontSize: 11,
-    color: '#6366f1',
-    fontWeight: '700',
+    color: '#64748b',
+    fontWeight: '500',
   },
   calloutArrow: {
     width: 0,
     height: 0,
     backgroundColor: 'transparent',
     borderStyle: 'solid',
-    borderLeftWidth: 10,
-    borderRightWidth: 10,
-    borderTopWidth: 10,
+    borderLeftWidth: 12,
+    borderRightWidth: 12,
+    borderTopWidth: 12,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderTopColor: '#fff',
-    marginTop: -1, // Adjust to overlap with bubble
+    borderTopColor: '#1e293b',
+    marginTop: -1,
   },
 });
