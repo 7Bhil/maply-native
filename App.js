@@ -65,6 +65,7 @@ export default function App() {
             selectedPlace={selectedPlace}
             onSelectPlace={handleSelectPlace}
             onMapLongPress={handleMapLongPress}
+            userLocation={userLocation}
           />
           
            {/* Floating instructions */}

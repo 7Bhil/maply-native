@@ -5,7 +5,7 @@ import MapView, { Marker, Callout } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { getCategoryById } from '../data/categories';
 
-export default function AppMapView({ places, selectedPlace, onSelectPlace, onMapLongPress }) {
+export default function AppMapView({ places, selectedPlace, onSelectPlace, onMapLongPress, userLocation }) {
   const mapRef = React.useRef(null);
   const markerRefs = React.useRef({});
 
