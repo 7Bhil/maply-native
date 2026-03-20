@@ -66,21 +66,31 @@ export function usePlaces() {
     };
 
     // Sync to Supabase
-    const { data, error } = await supabase
-      .from('places')
-      .insert([{
-        id: newPlace.id,
-        name: newPlace.name,
-        description: newPlace.description,
-        category: newPlace.category,
-        lat: newPlace.lat,
-        lng: newPlace.lng,
-        rating: newPlace.rating,
-        is_favorite: newPlace.isFavorite,
-        image_url: newPlace.image,
-        created_at: newPlace.createdAt,
-      }])
-      .select();
+    try {
+      const { data, error } = await supabase
+        .from('places')
+        .insert([{
+          id: newPlace.id,
+          name: newPlace.name,
+          description: newPlace.description,
+          category: newPlace.category,
+          lat: newPlace.lat,
+          lng: newPlace.lng,
+          rating: newPlace.rating,
+          is_favorite: newPlace.isFavorite,
+          image_url: newPlace.image,
+          created_at: newPlace.createdAt,
+        }])
+        .select();
+      
+      if (error) {
+        console.error('Supabase INSERT error:', error.message, error.details);
+      } else {
+        console.log('Supabase INSERT success:', data?.[0]?.name);
+      }
+    } catch (err) {
+      console.error('Supabase INSERT crash:', err);
+    }
 
     const updated = [newPlace, ...places];
     setPlaces(updated);

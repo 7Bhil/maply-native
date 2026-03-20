@@ -71,23 +71,35 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
               <View style={[styles.marker, { backgroundColor: cat.color }]}>
                 <Ionicons name={cat.icon?.replace('-outline', '') || 'location'} size={16} color="#fff" />
               </View>
-              <Callout onPress={() => {
-                const url = Platform.OS === 'ios' 
-                  ? `maps://app?daddr=${place.lat},${place.lng}`
-                  : `google.navigation:q=${place.lat},${place.lng}`;
-                Linking.openURL(url);
-              }}>
-                <View style={styles.callout}>
-                  {place.image && (
-                    <Image source={{ uri: place.image }} style={styles.calloutImage} />
-                  )}
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <Text style={styles.calloutTitle}>{place.name}</Text>
-                    {place.isFavorite && <Ionicons name="heart" size={12} color="#f43f5e" />}
+              <Callout 
+                tooltip={true}
+                onPress={() => {
+                  const url = Platform.OS === 'ios' 
+                    ? `maps://app?daddr=${place.lat},${place.lng}`
+                    : `https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}`;
+                  Linking.openURL(url);
+                }}
+              >
+                <View style={styles.calloutBubble}>
+                  <View style={styles.calloutContent}>
+                    {place.image && (
+                      <Image source={{ uri: place.image }} style={styles.calloutImage} />
+                    )}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                      <Text style={styles.calloutTitle}>{place.name}</Text>
+                      {place.isFavorite && <Ionicons name="heart" size={14} color="#f43f5e" />}
+                    </View>
+                    <Text style={styles.calloutCategory}>{cat.label}</Text>
+                    {place.description ? (
+                      <Text style={styles.calloutDesc} numberOfLines={3}>{place.description}</Text>
+                    ) : null}
+                    <View style={styles.calloutFooter}>
+                      <Ionicons name="navigate-circle" size={14} color="#6366f1" />
+                      <Text style={styles.calloutNavHint}>Itinéraire</Text>
+                    </View>
                   </View>
-                  <Text style={styles.calloutCategory}>{cat.label}</Text>
-                  {place.description ? <Text style={styles.calloutDesc}>{place.description}</Text> : null}
-                  <Text style={styles.calloutNavHint}>Tap pour l'itinéraire 🚗</Text>
+                  {/* Arrow for the bubble */}
+                  <View style={styles.calloutArrow} />
                 </View>
               </Callout>
             </Marker>
@@ -141,32 +153,72 @@ const styles = StyleSheet.create({
   markerEmoji: {
     fontSize: 16,
   },
-  callout: {
-    width: 150,
-    padding: 5,
+  calloutBubble: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 200,
+  },
+  calloutContent: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 10,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
   },
   calloutTitle: {
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 15,
+    color: '#1e293b',
   },
   calloutImage: {
-    width: 140,
-    height: 80,
+    width: '100%',
+    height: 100,
     borderRadius: 8,
-    marginBottom: 5,
+    marginBottom: 8,
   },
   calloutCategory: {
-    fontSize: 12,
-    color: '#666',
+    fontSize: 11,
+    color: '#6366f1',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
   },
   calloutDesc: {
-    fontSize: 12,
+    fontSize: 13,
+    color: '#475569',
+    lineHeight: 18,
+    marginBottom: 8,
+  },
+  calloutFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+    paddingTop: 8,
     marginTop: 2,
   },
   calloutNavHint: {
-    fontSize: 10,
+    fontSize: 11,
     color: '#6366f1',
-    marginTop: 5,
-    fontWeight: 'bold',
+    fontWeight: '700',
+  },
+  calloutArrow: {
+    width: 0,
+    height: 0,
+    backgroundColor: 'transparent',
+    borderStyle: 'solid',
+    borderLeftWidth: 10,
+    borderRightWidth: 10,
+    borderTopWidth: 10,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderTopColor: '#fff',
+    marginTop: -1, // Adjust to overlap with bubble
   },
 });
