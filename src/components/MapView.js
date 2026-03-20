@@ -133,29 +133,6 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
                   <Text style={styles.calloutNavHintSimple}>Tap pour itinéraire 🚗</Text>
                 </View>
               </Callout>
-
-                    <View style={styles.calloutRating}>
-                      <Text style={{ fontSize: 16 }}>{'⭐️'.repeat(Math.round(place.rating || 3))}</Text>
-                    </View>
-
-                    {place.description ? (
-                      <Text style={styles.calloutDesc} numberOfLines={4}>{place.description}</Text>
-                    ) : null}
-
-                    {place.image && (
-                      <Image source={{ uri: place.image }} style={styles.calloutImage} />
-                    )}
-
-                    <View style={styles.calloutFooter}>
-                      <Text style={styles.calloutFooterText}>{place.lat.toFixed(4)}, {place.lng.toFixed(4)}</Text>
-                      <Text style={styles.calloutFooterText}>
-                        {new Date(place.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.calloutArrow} />
-                </View>
-              </Callout>
             </Marker>
           );
         })}
