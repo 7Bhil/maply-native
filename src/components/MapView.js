@@ -117,6 +117,7 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
                 <Ionicons name={cat.icon?.replace('-outline', '') || 'location'} size={16} color="#fff" />
               </View>
               <Callout 
+                tooltip={true}
                 onPress={() => {
                   const url = Platform.OS === 'ios' 
                     ? `maps://app?daddr=${place.lat},${place.lng}`
@@ -124,13 +125,18 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
                   Linking.openURL(url);
                 }}
               >
-                <View style={styles.calloutSimple}>
-                  <Text style={styles.calloutTitleSimple}>{place.name}</Text>
-                  <Text style={styles.calloutCategorySimple}>{cat.label}</Text>
-                  {place.description ? (
-                    <Text style={styles.calloutDescSimple} numberOfLines={4}>{place.description}</Text>
-                  ) : null}
-                  <Text style={styles.calloutNavHintSimple}>Toucher pour l'itinéraire 🚗</Text>
+                <View style={styles.calloutBubble}>
+                  <View style={styles.calloutContent}>
+                    <Text style={styles.calloutTitle} numberOfLines={1}>{place.name}</Text>
+                    <Text style={styles.calloutCategory}>{cat.label}</Text>
+                    <Text style={styles.calloutDesc} numberOfLines={3}>
+                      {place.description || "Aucune description."}
+                    </Text>
+                    <View style={styles.calloutFooter}>
+                      <Text style={styles.calloutFooterText}>Voir itinéraire 🚗</Text>
+                    </View>
+                  </View>
+                  <View style={styles.calloutArrow} />
                 </View>
               </Callout>
             </Marker>
@@ -184,71 +190,59 @@ const styles = StyleSheet.create({
   markerEmoji: {
     fontSize: 16,
   },
-  calloutSimple: {
-    width: 200,
-    padding: 2,
-    backgroundColor: '#fff',
+  calloutBubble: {
+    width: 250,
+    height: 140,
+    alignItems: 'center',
+    backgroundColor: 'transparent',
   },
-  calloutTitleSimple: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    color: '#1e293b',
-    marginBottom: 2,
-  },
-  calloutCategorySimple: {
-    fontSize: 12,
-    color: '#6366f1',
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  calloutDescSimple: {
-    fontSize: 13,
-    color: '#64748b',
-    lineHeight: 18,
-  },
-  calloutNavHintSimple: {
-    fontSize: 11,
-    color: '#6366f1',
-    marginTop: 8,
-    fontWeight: '700',
-  },
-  calloutRating: {
-    flexDirection: 'row',
-    marginBottom: 10,
-  },
-  calloutDesc: {
-    fontSize: 14,
-    color: '#94a3b8',
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  calloutImage: {
+  calloutContent: {
+    backgroundColor: '#1e293b',
+    borderRadius: 12,
+    padding: 12,
     width: '100%',
     height: 120,
-    borderRadius: 10,
-    marginBottom: 12,
-    backgroundColor: '#0f172a',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  calloutTitle: {
+    fontWeight: '700',
+    fontSize: 16,
+    color: '#f8fafc',
+    marginBottom: 2,
+  },
+  calloutCategory: {
+    fontSize: 11,
+    color: '#6366f1',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    marginBottom: 6,
+  },
+  calloutDesc: {
+    fontSize: 13,
+    color: '#94a3b8',
+    lineHeight: 18,
+    flex: 1,
   },
   calloutFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingTop: 8,
+    marginTop: 8,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.05)',
+    paddingTop: 6,
   },
   calloutFooterText: {
     fontSize: 11,
-    color: '#64748b',
-    fontWeight: '500',
+    color: '#6366f1',
+    fontWeight: '700',
   },
   calloutArrow: {
     width: 0,
     height: 0,
     backgroundColor: 'transparent',
     borderStyle: 'solid',
-    borderLeftWidth: 12,
-    borderRightWidth: 12,
-    borderTopWidth: 12,
+    borderLeftWidth: 10,
+    borderRightWidth: 10,
+    borderTopWidth: 10,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
     borderTopColor: '#1e293b',
