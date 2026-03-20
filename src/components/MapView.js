@@ -39,7 +39,7 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
       // Auto-open callout
       setTimeout(() => {
         markerRefs.current[selectedPlace.id]?.showCallout();
-      }, 1100);
+      }, 500); // Sooner is usually better
     }
   }, [selectedPlace]);
 
