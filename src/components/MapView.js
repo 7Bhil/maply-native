@@ -111,7 +111,7 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
                 }, 200);
               }}
               title={place.name}
-              description={place.description}
+              description={place.description || cat.label}
             >
               <View style={[styles.marker, { backgroundColor: cat.color }]} pointerEvents="none">
                 <Ionicons name={cat.icon?.replace('-outline', '') || 'location'} size={16} color="#fff" />
@@ -128,9 +128,9 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
                   <Text style={styles.calloutTitleSimple}>{place.name}</Text>
                   <Text style={styles.calloutCategorySimple}>{cat.label}</Text>
                   {place.description ? (
-                    <Text style={styles.calloutDescSimple} numberOfLines={3}>{place.description}</Text>
+                    <Text style={styles.calloutDescSimple} numberOfLines={4}>{place.description}</Text>
                   ) : null}
-                  <Text style={styles.calloutNavHintSimple}>Tap pour itinéraire 🚗</Text>
+                  <Text style={styles.calloutNavHintSimple}>Toucher pour l'itinéraire 🚗</Text>
                 </View>
               </Callout>
             </Marker>
