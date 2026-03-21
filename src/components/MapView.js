@@ -103,12 +103,9 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
               key={place.id}
               ref={(el) => (markerRefs.current[place.id] = el)}
               coordinate={{ latitude: place.lat, longitude: place.lng }}
-              onPress={() => {
-                // Alert.alert('Debug', 'Marker tap: ' + place.name);
+              onPress={(e) => {
+                e.stopPropagation();
                 onSelectPlace(place);
-                setTimeout(() => {
-                  markerRefs.current[place.id]?.showCallout();
-                }, 200);
               }}
               title={place.name}
               description={place.description || cat.label}
@@ -116,29 +113,6 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
               <View style={[styles.marker, { backgroundColor: cat.color }]} pointerEvents="none">
                 <Ionicons name={cat.icon?.replace('-outline', '') || 'location'} size={16} color="#fff" />
               </View>
-              <Callout 
-                tooltip={true}
-                onPress={() => {
-                  const url = Platform.OS === 'ios' 
-                    ? `maps://app?daddr=${place.lat},${place.lng}`
-                    : `https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}`;
-                  Linking.openURL(url);
-                }}
-              >
-                <View style={styles.calloutBubble}>
-                  <View style={styles.calloutContent}>
-                    <Text style={styles.calloutTitle} numberOfLines={1}>{place.name}</Text>
-                    <Text style={styles.calloutCategory}>{cat.label}</Text>
-                    <Text style={styles.calloutDesc} numberOfLines={3}>
-                      {place.description || "Aucune description."}
-                    </Text>
-                    <View style={styles.calloutFooter}>
-                      <Text style={styles.calloutFooterText}>Voir itinéraire 🚗</Text>
-                    </View>
-                  </View>
-                  <View style={styles.calloutArrow} />
-                </View>
-              </Callout>
             </Marker>
           );
         })}

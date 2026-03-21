@@ -6,10 +6,13 @@ import * as Location from 'expo-location';
 import AppMapView from './src/components/MapView';
 import AddPlaceModal from './src/components/AddPlaceModal';
 import PlaceList from './src/components/PlaceList';
+import PlaceDetailCard from './src/components/PlaceDetailCard';
 import { usePlaces } from './src/hooks/usePlaces';
+import { useLiveLocation } from './src/hooks/useLiveLocation';
 
 export default function App() {
   const { places, addPlace, deletePlace } = usePlaces();
+  const { isLive, toggleLive, username } = useLiveLocation();
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [pendingCoords, setPendingCoords] = useState(null);
@@ -40,6 +43,7 @@ export default function App() {
 
   const handleSelectPlace = useCallback((place) => {
     setSelectedPlace(place);
+    if (place) setShowList(false); // Hide list to show detail card
   }, []);
 
   const handleDeletePlace = useCallback(async (id) => {
@@ -70,19 +74,42 @@ export default function App() {
           
            {/* Floating instructions */}
            <View style={styles.hintContainer} pointerEvents="none">
-             <View style={styles.hint}>
-               <Ionicons name="information-circle-outline" size={14} color="#6366f1" style={{ marginRight: 6 }} />
-               <Text style={styles.hintText}>Appui long pour ajouter un lieu</Text>
-             </View>
+             {!selectedPlace && (
+               <View style={styles.hint}>
+                 <Ionicons name="information-circle-outline" size={14} color="#6366f1" style={{ marginRight: 6 }} />
+                 <Text style={styles.hintText}>Appui long pour ajouter un lieu</Text>
+               </View>
+             )}
            </View>
+
+            {/* Live Toggle Button */}
+            <TouchableOpacity 
+              style={[styles.toggleBtn, styles.liveBtn, isLive && styles.liveBtnActive]} 
+              onPress={toggleLive}
+            >
+              <Ionicons name="radio" size={20} color={isLive ? "#fff" : "#64748b"} />
+              {isLive && <View style={styles.livePulse} />}
+            </TouchableOpacity>
 
            {/* List Toggle Button */}
            <TouchableOpacity 
-             style={[styles.toggleBtn, { bottom: 80 }]} 
-             onPress={() => setShowList(!showList)}
+             style={[styles.toggleBtn, { bottom: selectedPlace ? 280 : 80 }]} 
+             onPress={() => {
+               setShowList(!showList);
+               if (!showList) setSelectedPlace(null);
+             }}
            >
              <Ionicons name={showList ? "chevron-down" : "list"} size={20} color="#6366f1" />
            </TouchableOpacity>
+
+           {/* Place Detail Card */}
+           {selectedPlace && !showList && (
+             <PlaceDetailCard 
+               place={selectedPlace} 
+               onClose={() => setSelectedPlace(null)}
+               onShare={(place) => {/* could use Share.share here */}}
+             />
+           )}
          </View>
 
          {/* Place List (Bottom Panel) */}
@@ -159,5 +186,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 5,
     elevation: 4,
+    zIndex: 10,
+  },
+  liveBtn: {
+    bottom: 20,
+    left: 20,
+    backgroundColor: '#fff',
+  },
+  liveBtnActive: {
+    backgroundColor: '#f43f5e',
+  },
+  livePulse: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#f43f5e',
   },
 });
