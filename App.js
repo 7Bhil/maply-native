@@ -36,10 +36,14 @@ export default function App() {
 
   React.useEffect(() => {
     (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === 'granted') {
-        let location = await Location.getCurrentPositionAsync({});
-        setUserLocation(location.coords);
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === 'granted') {
+          let location = await Location.getCurrentPositionAsync({});
+          setUserLocation(location.coords);
+        }
+      } catch (e) {
+        console.error('Location error:', e);
       }
     })();
   }, []);
