@@ -20,7 +20,13 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.anonymous.nativeapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -39,6 +45,11 @@
           "photosPermission": "L'application a besoin d'accéder à vos photos pour enregistrer les images des lieux."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "f9174a2d-56b8-4cf1-be3d-6a1936a7815a"
+      }
+    }
   }
 }

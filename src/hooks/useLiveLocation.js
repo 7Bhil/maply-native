@@ -10,6 +10,7 @@ export function useLiveLocation() {
   const [isLive, setIsLive] = useState(false);
   const [username, setUsername] = useState('Bhilal');
   const watchRef = useRef(null);
+  const timeoutRef = useRef(null);
 
   useEffect(() => {
     // Load persisted state
@@ -38,39 +39,64 @@ export function useLiveLocation() {
     }
   }, [username]);
 
-  const toggleLive = useCallback(async () => {
-    const nextState = !isLive;
-    setIsLive(nextState);
-    await AsyncStorage.setItem(LIVE_KEY, nextState.toString());
-
-    if (nextState) {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-          setIsLive(false);
-          return;
-      }
-      
-      // Start watching
-      watchRef.current = await Location.watchPositionAsync(
-        {
-          accuracy: Location.Accuracy.High,
-          distanceInterval: 10, // meters
-          timeInterval: 20000, // 20 seconds
-        },
-        (location) => {
-          updateLocation(location.coords);
-        }
-      );
-    } else {
-      // Stop watching
-      if (watchRef.current) {
-        watchRef.current.remove();
-        watchRef.current = null;
-      }
-      // Optional: remove from DB when stopping
-      await supabase.from('users_locations').delete().eq('username', username);
+  const stopLive = useCallback(async () => {
+    setIsLive(false);
+    await AsyncStorage.setItem(LIVE_KEY, 'false');
+    
+    if (watchRef.current) {
+      watchRef.current.remove();
+      watchRef.current = null;
     }
-  }, [isLive, username, updateLocation]);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    
+    await supabase.from('users_locations').delete().eq('username', username);
+  }, [username]);
+
+  const toggleLive = useCallback(async () => {
+    if (isLive) {
+      await stopLive();
+      return;
+    }
+
+    // Start Live
+    setIsLive(true);
+    await AsyncStorage.setItem(LIVE_KEY, 'true');
+
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+        setIsLive(false);
+        return;
+    }
+    
+    // Start watching
+    watchRef.current = await Location.watchPositionAsync(
+      {
+        accuracy: Location.Accuracy.High,
+        distanceInterval: 10, // meters
+        timeInterval: 20000, // 20 seconds
+      },
+      (location) => {
+        updateLocation(location.coords);
+      }
+    );
+    // Start 30-minute auto-disable timer to save battery and privacy
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(async () => {
+      console.log("Auto-disabling live location after 30 minutes");
+      await stopLive();
+    }, 30 * 60 * 1000); // 30 minutes
+
+  }, [isLive, username, updateLocation, stopLive]);
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
 
   return { isLive, toggleLive, username, setUsername };
 }
