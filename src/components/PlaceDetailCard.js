@@ -18,7 +18,12 @@ export default function PlaceDetailCard({ place, onClose, onShare }) {
           <Ionicons name={cat.icon?.replace('-outline', '') || 'location'} size={24} color={cat.color} />
         </View>
         <View style={styles.titleContainer}>
-          <Text style={styles.name}>{place.name}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Text style={styles.name}>{place.name}</Text>
+            {place.is_public === false && (
+              <Ionicons name="lock-closed" size={16} color="#94a3b8" />
+            )}
+          </View>
           <Text style={[styles.category, { color: cat.color }]}>{cat.label}</Text>
         </View>
       </View>

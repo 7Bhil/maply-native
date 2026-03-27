@@ -7,8 +7,10 @@ import AppMapView from './src/components/MapView';
 import AddPlaceModal from './src/components/AddPlaceModal';
 import PlaceList from './src/components/PlaceList';
 import PlaceDetailCard from './src/components/PlaceDetailCard';
+import Auth from './src/components/Auth';
 import { usePlaces } from './src/hooks/usePlaces';
 import { useLiveLocation } from './src/hooks/useLiveLocation';
+import { supabase } from './src/lib/supabase';
 
 export default function App() {
   const { places, addPlace, deletePlace } = usePlaces();
@@ -19,6 +21,17 @@ export default function App() {
   const [search, setSearch] = useState('');
   const [showList, setShowList] = useState(true);
   const [userLocation, setUserLocation] = useState(null);
+  const [session, setSession] = useState(null);
+
+  React.useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+  }, []);
 
   React.useEffect(() => {
     (async () => {
@@ -57,8 +70,12 @@ export default function App() {
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="dark-content" />
-      
-      <KeyboardAvoidingView 
+        
+        {!session ? (
+          <Auth />
+        ) : (
+          <>
+            <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
         style={{ flex: 1 }}
       >
@@ -90,6 +107,14 @@ export default function App() {
               <Ionicons name="radio" size={20} color={isLive ? "#fff" : "#64748b"} />
               {isLive && <View style={styles.livePulse} />}
             </TouchableOpacity>
+
+           {/* Logout Button */}
+           <TouchableOpacity 
+             style={[styles.toggleBtn, { top: 80 }]} 
+             onPress={() => supabase.auth.signOut()}
+           >
+             <Ionicons name="log-out-outline" size={20} color="#f43f5e" />
+           </TouchableOpacity>
 
            {/* List Toggle Button */}
            <TouchableOpacity 
@@ -133,6 +158,8 @@ export default function App() {
         onConfirm={handleConfirmAdd}
         onClose={() => setModalVisible(false)}
       />
+          </>
+        )}
       </SafeAreaView>
     </SafeAreaProvider>
   );

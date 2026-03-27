@@ -15,6 +15,7 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
   const [addressResults, setAddressResults] = useState([]);
   const [loadingAddr, setLoadingAddr] = useState(false);
   const [customCoords, setCustomCoords] = useState(null);
+  const [isPublic, setIsPublic] = useState(true);
 
   const searchAddress = async (query) => {
     setAddressSearch(query);
@@ -74,6 +75,7 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
       rating,
       isFavorite,
       image: photo,
+      is_public: isPublic,
     });
     setName('');
     setDescription('');
@@ -82,6 +84,7 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
     setIsFavorite(false);
     setPhoto(null);
     setCustomCoords(null);
+    setIsPublic(true);
   };
 
   return (
@@ -180,6 +183,37 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
                 </View>
               )}
             </View>
+
+            <Text style={styles.label}>Visibilité</Text>
+            <TouchableOpacity 
+              style={[
+                styles.visibilityBtn, 
+                { backgroundColor: isPublic ? '#e0e7ff' : '#f1f5f9', borderColor: isPublic ? '#818cf8' : '#cbd5e1' }
+              ]} 
+              onPress={() => setIsPublic(!isPublic)}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                <Ionicons name={isPublic ? "eye-outline" : "eye-off-outline"} size={22} color={isPublic ? '#4f46e5' : '#64748b'} />
+                <View style={{ marginLeft: 12 }}>
+                  <Text style={{ fontSize: 15, fontWeight: '600', color: isPublic ? '#3730a3' : '#334155' }}>
+                    {isPublic ? 'Publique' : 'Privé'}
+                  </Text>
+                  <Text style={{ fontSize: 12, color: isPublic ? '#4f46e5' : '#64748b', marginTop: 2 }}>
+                    {isPublic ? 'Visible par tout le monde' : 'Visible uniquement par vous'}
+                  </Text>
+                </View>
+              </View>
+              <View style={[
+                styles.toggleTrack, 
+                { backgroundColor: isPublic ? '#4f46e5' : '#cbd5e1' }
+              ]}>
+                <View style={[
+                  styles.toggleThumb, 
+                  { transform: [{ translateX: isPublic ? 16 : 0 }] }
+                ]} />
+              </View>
+            </TouchableOpacity>
+            
           </ScrollView>
 
           <View style={styles.actions}>
@@ -340,5 +374,31 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 2,
     right: 2,
+  },
+  visibilityBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginTop: 5,
+  },
+  toggleTrack: {
+    width: 44,
+    height: 26,
+    borderRadius: 13,
+    padding: 3,
+    justifyContent: 'center',
+  },
+  toggleThumb: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
   },
 });

@@ -90,6 +90,7 @@ export default function PlaceList({ places, search, onSearchChange, onSelectPlac
                <View style={styles.info}>
                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                    <Text style={styles.name}>{item.name}</Text>
+                   {item.is_public === false && <Ionicons name="lock-closed" size={14} color="#94a3b8" />}
                    {item.isFavorite && <Ionicons name="heart" size={12} color="#f43f5e" />}
                    <Text style={{ fontSize: 10 }}>{'⭐️'.repeat(Math.max(0, Math.floor(item.rating || 3)))}</Text>
                  </View>
