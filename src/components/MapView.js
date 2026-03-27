@@ -133,12 +133,13 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
           </Marker>
         )}
         {places.map((place) => {
+          if (!place.lat || !place.lng || isNaN(place.lat) || isNaN(place.lng)) return null;
           const cat = getCategoryById(place.category);
           return (
             <Marker
               key={place.id}
               ref={(el) => (markerRefs.current[place.id] = el)}
-              coordinate={{ latitude: place.lat, longitude: place.lng }}
+              coordinate={{ latitude: Number(place.lat), longitude: Number(place.lng) }}
               onPress={(e) => {
                 e.stopPropagation();
                 onSelectPlace(place);
