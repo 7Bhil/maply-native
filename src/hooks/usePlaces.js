@@ -138,5 +138,61 @@ export function usePlaces() {
     await savePlaces(updated);
   }, [places]);
 
-  return { places, addPlace, deletePlace };
+  const updatePlace = useCallback(async (id, placeData) => {
+    let imageUrl = placeData.image;
+
+    // Supabase Storage upload if image URI is provided
+    if (placeData.image && placeData.image.startsWith('file://')) {
+      try {
+        const response = await fetch(placeData.image);
+        const blob = await response.blob();
+        const fileName = `${id}.jpg`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('place_photos')
+          .upload(fileName, blob, {
+            contentType: 'image/jpeg',
+            cacheControl: '3600',
+            upsert: true
+          });
+
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage
+            .from('place_photos')
+            .getPublicUrl(fileName);
+          imageUrl = urlData.publicUrl;
+        } else {
+          console.error('Upload Error:', uploadError.message);
+        }
+      } catch (err) {
+        console.error('Image upload crash:', err);
+      }
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('places')
+        .update({
+          name: placeData.name,
+          description: placeData.description,
+          category: placeData.category,
+          lat: placeData.lat,
+          lng: placeData.lng,
+          rating: placeData.rating,
+          is_public: placeData.isPublic,
+          image_url: imageUrl,
+        })
+        .eq('id', id)
+        .select();
+      
+      if (!error && data) {
+         setPlaces((prev) => prev.map((p) => (p.id === id ? { ...data[0], image: data[0].image_url, isFavorite: data[0].is_favorite } : p)));
+         return data[0];
+      }
+    } catch (err) {
+      console.error('Supabase UPDATE crash:', err);
+    }
+  }, []);
+
+  return { places, addPlace, deletePlace, updatePlace };
 }

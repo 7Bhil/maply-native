@@ -13,11 +13,12 @@ import { useLiveLocation } from './src/hooks/useLiveLocation';
 import { supabase } from './src/lib/supabase';
 
 export default function App() {
-  const { places, addPlace, deletePlace } = usePlaces();
+  const { places, addPlace, deletePlace, updatePlace } = usePlaces();
   const { isLive, toggleLive, username } = useLiveLocation();
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [pendingCoords, setPendingCoords] = useState(null);
+  const [editingPlace, setEditingPlace] = useState(null);
   const [search, setSearch] = useState('');
   const [showList, setShowList] = useState(true);
   const [userLocation, setUserLocation] = useState(null);
@@ -58,6 +59,25 @@ export default function App() {
     setSelectedPlace(place);
     if (place) setShowList(false); // Hide list to show detail card
   }, []);
+
+  const handleEditPlace = useCallback((place) => {
+    setEditingPlace(place);
+    setModalVisible(true);
+  }, []);
+
+  const handleConfirmEdit = useCallback(async (placeData) => {
+    if (editingPlace.user_id !== session?.user?.id) {
+       const newPlace = await addPlace({ ...placeData, isPublic: false });
+       setModalVisible(false);
+       setEditingPlace(null);
+       setSelectedPlace(newPlace);
+    } else {
+       const updatedPlace = await updatePlace(editingPlace.id, placeData);
+       setModalVisible(false);
+       setEditingPlace(null);
+       if (selectedPlace?.id === editingPlace.id) setSelectedPlace(updatedPlace);
+    }
+  }, [editingPlace, session, addPlace, updatePlace, selectedPlace]);
 
   const handleDeletePlace = useCallback(async (id) => {
     await deletePlace(id);
@@ -133,6 +153,8 @@ export default function App() {
                place={selectedPlace} 
                onClose={() => setSelectedPlace(null)}
                onShare={(place) => {/* could use Share.share here */}}
+               onEdit={handleEditPlace}
+               sessionUserId={session?.user?.id}
              />
            )}
          </View>
@@ -155,8 +177,10 @@ export default function App() {
       <AddPlaceModal
         visible={modalVisible}
         coords={pendingCoords}
-        onConfirm={handleConfirmAdd}
-        onClose={() => setModalVisible(false)}
+        initialData={editingPlace}
+        isFork={editingPlace && editingPlace.user_id !== session?.user?.id}
+        onConfirm={editingPlace ? handleConfirmEdit : handleConfirmAdd}
+        onClose={() => { setModalVisible(false); setEditingPlace(null); setPendingCoords(null); }}
       />
           </>
         )}

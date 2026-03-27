@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Alert, Linking, Platform, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, Callout } from 'react-native-maps';
+import MapView, { Marker, Callout, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { getCategoryById } from '../data/categories';
 
@@ -42,6 +42,42 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
       }, 500); // Sooner is usually better
     }
   }, [selectedPlace]);
+
+  const [routeData, setRouteData] = useState(null);
+
+  useEffect(() => {
+    if (selectedPlace && userLocation) {
+      const fetchRoute = async () => {
+        try {
+          const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${userLocation.longitude},${userLocation.latitude};${selectedPlace.lng},${selectedPlace.lat}?overview=full&geometries=geojson`);
+          const data = await res.json();
+          if (data.routes && data.routes[0]) {
+            const coords = data.routes[0].geometry.coordinates.map(c => ({
+              latitude: c[1],
+              longitude: c[0]
+            }));
+            const durationSec = data.routes[0].duration;
+            const distanceM = data.routes[0].distance;
+            
+            const hours = Math.floor(durationSec / 3600);
+            const minutes = Math.floor((durationSec % 3600) / 60);
+            let timeStr = '';
+            if (hours > 0) timeStr += `${hours}h `;
+            timeStr += `${minutes}m`;
+
+            const distStr = distanceM > 1000 ? `${(distanceM / 1000).toFixed(1)} km` : `${Math.round(distanceM)} m`;
+
+            setRouteData({ coords, timeStr, distStr });
+          }
+        } catch(e) {
+          console.error(e);
+        }
+      };
+      fetchRoute();
+    } else {
+      setRouteData(null);
+    }
+  }, [selectedPlace, userLocation]);
 
   return (
     <View style={styles.container}>
@@ -116,7 +152,22 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
             </Marker>
           );
         })}
+        {routeData && (
+          <Polyline
+            coordinates={routeData.coords}
+            strokeColor="#6366f1"
+            strokeWidth={4}
+            lineDashPattern={[10, 10]}
+          />
+        )}
       </MapView>
+
+      {routeData && (
+        <View style={styles.etaPill} pointerEvents="none">
+          <Text style={styles.etaTime}>🚗 {routeData.timeStr}</Text>
+          <Text style={styles.etaDist}>({routeData.distStr} - sans trafic)</Text>
+        </View>
+      )}
 
       <TouchableOpacity style={styles.locateBtn} onPress={centerOnUser}>
         <Ionicons name="location" size={20} color="#6366f1" />
@@ -221,5 +272,32 @@ const styles = StyleSheet.create({
     borderRightColor: 'transparent',
     borderTopColor: '#1e293b',
     marginTop: -1,
+  },
+  etaPill: {
+    position: 'absolute',
+    top: 60,
+    alignSelf: 'center',
+    backgroundColor: '#1e293b',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  etaTime: {
+    color: '#6366f1',
+    fontWeight: 'bold',
+    fontSize: 15,
+    marginRight: 8,
+  },
+  etaDist: {
+    color: '#94a3b8',
+    fontSize: 13,
+    fontWeight: '500',
   },
 });

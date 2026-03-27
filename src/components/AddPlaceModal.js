@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { CATEGORIES } from '../data/categories';
 
-export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
+export default function AddPlaceModal({ visible, coords, onConfirm, onClose, initialData, isFork }) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('other');
@@ -16,6 +16,30 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
   const [loadingAddr, setLoadingAddr] = useState(false);
   const [customCoords, setCustomCoords] = useState(null);
   const [isPublic, setIsPublic] = useState(true);
+
+  React.useEffect(() => {
+    if (visible && initialData) {
+      setName(initialData.name || '');
+      setDescription(initialData.description || '');
+      setCategory(initialData.category || 'other');
+      setRating(initialData.rating || 3);
+      setIsFavorite(initialData.isFavorite || false);
+      setPhoto(initialData.image || null);
+      setCustomCoords({ latitude: initialData.lat, longitude: initialData.lng });
+      setIsPublic(isFork ? false : (initialData.is_public ?? true));
+    } else if (visible && !initialData) {
+      setName('');
+      setDescription('');
+      setCategory('other');
+      setRating(3);
+      setIsFavorite(false);
+      setPhoto(null);
+      setAddressSearch('');
+      setAddressResults([]);
+      setCustomCoords(null);
+      setIsPublic(true);
+    }
+  }, [visible, initialData, isFork]);
 
   const searchAddress = async (query) => {
     setAddressSearch(query);
@@ -70,12 +94,12 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
       name: name.trim(),
       description: description.trim(),
       category,
-      lat: customCoords?.latitude || coords.latitude,
-      lng: customCoords?.longitude || coords.longitude,
+      lat: customCoords?.latitude || coords?.latitude,
+      lng: customCoords?.longitude || coords?.longitude,
       rating,
       isFavorite,
       image: photo,
-      is_public: isPublic,
+      isPublic: isPublic,
     });
     setName('');
     setDescription('');
@@ -91,9 +115,9 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
     <Modal visible={visible} transparent={true} animationType="slide">
       <View style={styles.overlay}>
         <View style={styles.modal}>
-          <Text style={styles.title}>Ajouter un lieu</Text>
+          <Text style={styles.title}>{isFork ? 'Personnaliser ce lieu' : (initialData ? 'Modifier le lieu' : 'Ajouter un lieu')}</Text>
           <Text style={styles.coords}>
-            📍 {(customCoords?.latitude || coords?.latitude)?.toFixed(4)}, {(customCoords?.longitude || coords?.longitude)?.toFixed(4)}
+            {(customCoords || coords) ? `📍 ${(customCoords?.latitude || coords?.latitude)?.toFixed(4)}, ${(customCoords?.longitude || coords?.longitude)?.toFixed(4)}` : (isFork ? 'Enregistrez dans vos lieux privés' : 'Modifiez les informations ci-dessous')}
           </Text>
 
           <View style={{ marginBottom: 15 }}>
@@ -221,7 +245,7 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose }) {
               <Text style={styles.cancelText}>Annuler</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.confirmBtn} onPress={handleSubmit}>
-              <Text style={styles.confirmText}>Ajouter</Text>
+              <Text style={styles.confirmText}>{isFork ? 'Copier' : (initialData ? 'Enregistrer' : 'Ajouter')}</Text>
             </TouchableOpacity>
           </View>
         </View>

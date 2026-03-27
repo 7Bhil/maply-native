@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity, Image, Platform, Linking } fr
 import { Ionicons } from '@expo/vector-icons';
 import { getCategoryById } from '../data/categories';
 
-export default function PlaceDetailCard({ place, onClose, onShare }) {
+export default function PlaceDetailCard({ place, onClose, onShare, onEdit, sessionUserId }) {
   if (!place) return null;
   const cat = getCategoryById(place.category);
 
@@ -58,6 +58,10 @@ export default function PlaceDetailCard({ place, onClose, onShare }) {
         >
           <Ionicons name="navigate" size={18} color="#fff" />
           <Text style={styles.navBtnText}>Y aller</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.shareBtn} onPress={() => onEdit(place)}>
+          <Ionicons name={place.user_id === sessionUserId ? "pencil" : "color-wand"} size={20} color={place.user_id === sessionUserId ? "#6366f1" : "#8b5cf6"} />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.shareBtn} onPress={() => onShare(place)}>
