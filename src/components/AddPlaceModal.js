@@ -278,7 +278,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   form: {
-    marginBottom: 20,
+    flex: 1,
+    marginBottom: 10,
   },
   label: {
     fontSize: 14,

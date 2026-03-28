@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Alert, Linking, Platform, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, Callout, Polyline } from 'react-native-maps';
+import MapView, { Marker, Callout, Polyline, UrlTile } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { getCategoryById } from '../data/categories';
 
@@ -94,7 +94,13 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
           latitudeDelta: 0.0922,
           longitudeDelta: 0.0421,
         }}
+        mapType={Platform.OS === 'android' ? 'none' : 'standard'}
       >
+        <UrlTile
+          urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maximumZ={19}
+          flipY={false}
+        />
         {/* User Location Marker */}
         {userLocation && (
           <Marker
