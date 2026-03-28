@@ -15,10 +15,14 @@ export function useLiveLocation() {
   useEffect(() => {
     // Load persisted state
     (async () => {
-      const savedLive = await AsyncStorage.getItem(LIVE_KEY);
-      const savedName = await AsyncStorage.getItem(USERNAME_KEY);
-      if (savedLive === 'true') setIsLive(true);
-      if (savedName) setUsername(savedName);
+      try {
+        const savedLive = await AsyncStorage.getItem(LIVE_KEY);
+        const savedName = await AsyncStorage.getItem(USERNAME_KEY);
+        if (savedLive === 'true') setIsLive(true);
+        if (savedName) setUsername(savedName);
+      } catch (e) {
+        console.error('Failed to load live state', e);
+      }
     })();
   }, []);
 

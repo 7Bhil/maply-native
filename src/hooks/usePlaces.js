@@ -11,16 +11,20 @@ export function usePlaces() {
   useEffect(() => {
     loadPlaces();
 
-    const channel = supabase
-      .channel('places_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'places' }, () => {
-        loadPlaces();
-      })
-      .subscribe();
+    try {
+      const channel = supabase
+        .channel('places_changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'places' }, () => {
+          loadPlaces();
+        })
+        .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } catch (e) {
+      console.error('Supabase subscription error:', e);
+    }
   }, []);
 
   const loadPlaces = async () => {
@@ -31,7 +35,7 @@ export function usePlaces() {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (!error && data) {
+      if (!error && Array.isArray(data)) {
         // Map database fields to app state fields
         const mapped = data.map(p => ({
           ...p,
