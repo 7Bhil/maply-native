@@ -23,17 +23,5 @@
     "react-native-url-polyfill": "^3.0.0",
     "uuid": "^9.0.0"
   },
-  "expo": {
-    "install": {
-      "exclude": [
-        "expo-location",
-        "expo-status-bar",
-        "react",
-        "react-native",
-        "react-native-maps",
-        "@react-native-async-storage/async-storage"
-      ]
-    }
-  },
   "private": true
 }
