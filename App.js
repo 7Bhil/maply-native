@@ -105,6 +105,13 @@ export default function App() {
       >
         {/* Map View */}
         <View style={styles.mapContainer}>
+          {/* Plan B: Disable Map for testing */}
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f1f5f9' }}>
+            <Ionicons name="map-outline" size={64} color="#cbd5e1" />
+            <Text style={{ marginTop: 20, color: '#64748b', fontWeight: 'bold' }}>CARTE DÉSACTIVÉE (TEST PLAN B)</Text>
+            <Text style={{ marginTop: 5, color: '#94a3b8', fontSize: 12 }}>Si l'appli ne crash plus, c'est la carte !</Text>
+          </View>
+          {/* 
           <AppMapView
             places={places}
             selectedPlace={selectedPlace}
@@ -112,6 +119,7 @@ export default function App() {
             onMapLongPress={handleMapLongPress}
             userLocation={userLocation}
           />
+          */}
           
            {/* Floating instructions */}
            <View style={styles.hintContainer} pointerEvents="none">

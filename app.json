@@ -26,7 +26,13 @@
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.RECORD_AUDIO"
       ],
-      "package": "com.anonymous.nativeapp"
+      "package": "com.anonymous.nativeapp",
+      "config": {
+        "googleMaps": {
+          "apiKey": "METTRE_TA_CLE_GOOGLE_MAPS_ICI"
+        }
+      },
+      "newArchEnabled": false
     },
     "web": {
       "favicon": "./assets/favicon.png"
