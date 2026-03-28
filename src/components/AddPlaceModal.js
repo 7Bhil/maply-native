@@ -238,16 +238,15 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose, ini
               </View>
             </TouchableOpacity>
             
+            <View style={[styles.actions, { marginTop: 20, marginBottom: 20 }]}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
+                <Text style={styles.cancelText}>Annuler</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.confirmBtn} onPress={handleSubmit}>
+                <Text style={styles.confirmText}>{isFork ? 'Copier' : (initialData ? 'Enregistrer' : 'Ajouter')}</Text>
+              </TouchableOpacity>
+            </View>
           </ScrollView>
-
-          <View style={styles.actions}>
-            <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
-              <Text style={styles.cancelText}>Annuler</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.confirmBtn} onPress={handleSubmit}>
-              <Text style={styles.confirmText}>{isFork ? 'Copier' : (initialData ? 'Enregistrer' : 'Ajouter')}</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </View>
     </Modal>
