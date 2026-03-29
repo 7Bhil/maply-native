@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 
 export default function Auth() {
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
@@ -21,8 +22,23 @@ export default function Auth() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
+        if (!username.trim()) throw new Error('Le pseudo est obligatoire.');
+        const { data: authData, error: authError } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            data: { username }
+          }
+        });
+        if (authError) throw authError;
+
+        if (authData?.user) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({ id: authData.user.id, username: username.trim() });
+          if (profileError) console.error('Profile creation error:', profileError);
+        }
+
         setSuccessMsg('Inscription réussie ! Vérifiez vos emails si nécessaire.');
       }
     } catch (error) {
@@ -73,6 +89,21 @@ export default function Auth() {
               keyboardType="email-address"
             />
           </View>
+
+          {!isLogin && (
+            <>
+              <Text style={styles.label}>Pseudo</Text>
+              <View style={styles.inputContainer}>
+                <Ionicons name="person-outline" size={20} color="#94a3b8" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Votre pseudo public"
+                  value={username}
+                  onChangeText={setUsername}
+                />
+              </View>
+            </>
+          )}
 
           <Text style={styles.label}>Mot de passe</Text>
           <View style={styles.inputContainer}>

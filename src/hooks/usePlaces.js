@@ -32,7 +32,7 @@ export function usePlaces() {
       // Priorité Supabase
       const { data, error } = await supabase
         .from('places')
-        .select('*')
+        .select('*, profiles(username)')
         .order('created_at', { ascending: false });
 
       if (!error && Array.isArray(data)) {
@@ -42,6 +42,7 @@ export function usePlaces() {
           isFavorite: p.is_favorite,
           image: p.image_url,
           createdAt: p.created_at,
+          username: p.profiles?.username || 'Anonyme',
         }));
         setPlaces(mapped);
         await savePlaces(mapped);

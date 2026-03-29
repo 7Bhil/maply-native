@@ -112,7 +112,12 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose, ini
   };
 
   return (
-    <Modal visible={visible} transparent={true} animationType="slide">
+    <Modal 
+      visible={visible} 
+      transparent={true} 
+      animationType="slide"
+      onRequestClose={onClose}
+    >
       <View style={styles.overlay}>
         <View style={styles.modal}>
           <Text style={styles.title}>{isFork ? 'Personnaliser ce lieu' : (initialData ? 'Modifier le lieu' : 'Ajouter un lieu')}</Text>
@@ -239,10 +244,14 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose, ini
             </TouchableOpacity>
             
             <View style={[styles.actions, { marginTop: 20, marginBottom: 20 }]}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={() => { Keyboard.dismiss(); onClose(); }}>
                 <Text style={styles.cancelText}>Annuler</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.confirmBtn} onPress={handleSubmit}>
+              <TouchableOpacity 
+                style={[styles.confirmBtn, !name.trim() && { backgroundColor: '#a5b4fc' }]} 
+                onPress={handleSubmit}
+                disabled={!name.trim()}
+              >
                 <Text style={styles.confirmText}>{isFork ? 'Copier' : (initialData ? 'Enregistrer' : 'Ajouter')}</Text>
               </TouchableOpacity>
             </View>

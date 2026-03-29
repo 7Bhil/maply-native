@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image, Platform, Linking } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Image, Platform, Linking, TextInput, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getCategoryById } from '../data/categories';
 
@@ -25,6 +25,7 @@ export default function PlaceDetailCard({ place, onClose, onShare, onEdit, sessi
             )}
           </View>
           <Text style={[styles.category, { color: cat.color }]}>{cat.label}</Text>
+          <Text style={styles.byUser}>Partagé par : {place.username || 'Anonyme'}</Text>
         </View>
       </View>
 
@@ -119,6 +120,12 @@ const styles = StyleSheet.create({
   category: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  byUser: {
+    fontSize: 12,
+    color: '#94a3b8',
+    marginTop: 2,
+    fontStyle: 'italic',
   },
   ratingRow: {
     flexDirection: 'row',

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, View, StatusBar, TouchableOpacity, Text, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, View, StatusBar, TouchableOpacity, Text, KeyboardAvoidingView, Platform, TextInput, Keyboard } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
@@ -23,6 +23,9 @@ export default function App() {
   const [showList, setShowList] = useState(true);
   const [userLocation, setUserLocation] = useState(null);
   const [session, setSession] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchCoords, setSearchCoords] = useState(null);
 
   React.useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -107,12 +110,58 @@ export default function App() {
         <View style={styles.mapContainer}>
           <AppMapView
             places={places}
-            selectedPlace={selectedPlace}
+            selectedPlace={selectedPlace || searchCoords}
             onSelectPlace={handleSelectPlace}
             onMapLongPress={handleMapLongPress}
             userLocation={userLocation}
           />
           
+          {/* Location Search Bar */}
+          <View style={styles.searchBar}>
+            <View style={styles.searchContainer}>
+              <Ionicons name="search" size={18} color="#94a3b8" />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Chercher une adresse..."
+                value={searchQuery}
+                onChangeText={async (text) => {
+                  setSearchQuery(text);
+                  if (text.length > 3) {
+                    try {
+                      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(text)}&format=json&limit=5`, { headers: { 'User-Agent': 'Maply-App' } });
+                      const data = await res.json();
+                      setSearchResults(data);
+                    } catch (e) {
+                      console.log(e);
+                    }
+                  } else {
+                    setSearchResults([]);
+                  }
+                }}
+              />
+            </View>
+            {searchResults.length > 0 && (
+              <View style={styles.searchResults}>
+                {searchResults.map((item, idx) => (
+                  <TouchableOpacity 
+                    key={idx} 
+                    style={styles.searchResultItem}
+                    onPress={() => {
+                      const lat = parseFloat(item.lat);
+                      const lng = parseFloat(item.lon);
+                      setSearchCoords({ lat, lng, name: item.display_name });
+                      setSearchQuery('');
+                      setSearchResults([]);
+                      Keyboard.dismiss();
+                    }}
+                  >
+                    <Text numberOfLines={1}>{item.display_name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
+
            {/* Floating instructions */}
            <View style={styles.hintContainer} pointerEvents="none">
              {!selectedPlace && (
@@ -261,5 +310,47 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderWidth: 2,
     borderColor: '#f43f5e',
+  },
+  searchBar: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    right: 70,
+    zIndex: 100,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 44,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#1e293b',
+  },
+  searchResults: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginTop: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+    overflow: 'hidden',
+  },
+  searchResultItem: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
   },
 });
