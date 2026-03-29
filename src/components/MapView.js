@@ -21,35 +21,33 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
         <style>
           body { margin: 0; padding: 0; height: 100vh; width: 100vw; }
-          #map { height: 100%; width: 100%; }
+          #map { height: 100%; width: 100%; background: #f8fafc; }
           .marker-pin {
             width: 30px; height: 30px; border-radius: 50% 50% 50% 0;
             position: absolute; transform: rotate(-45deg); left: 50%; top: 50%; margin: -15px 0 0 -15px;
             display: flex; justify-content: center; align-items: center; border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
           }
           .marker-pin i { transform: rotate(45deg); color: white; font-style: normal; font-size: 14px; }
-          .marker-pin::after {
-            content: ''; width: 14px; height: 14px; margin: 8px 0 0 8px; background: white;
-            position: absolute; border-radius: 50%;
-            display: none;
-          }
         </style>
       </head>
       <body>
         <div id="map"></div>
         <script>
           var map = L.map('map', { zoomControl: false }).setView([48.8566, 2.3522], 13);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap'
+          
+          // CartoDB Voyager - beautiful and less restrictive
+          L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            maxZoom: 20,
+            attribution: '© OpenStreetMap © CARTO'
           }).addTo(map);
 
           var markers = {};
           var userMarker = null;
+          var routeLine = null;
 
           function updateMarkers(placesJson) {
             const places = JSON.parse(placesJson);
-            // Clear old markers
             Object.values(markers).forEach(m => map.removeLayer(m));
             markers = {};
 
@@ -78,6 +76,16 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
             }).addTo(map);
           }
 
+          function drawTrajectory(lat1, lng1, lat2, lng2) {
+            if (routeLine) map.removeLayer(routeLine);
+            routeLine = L.polyline([[lat1, lng1], [lat2, lng2]], {
+              color: '#6366f1',
+              dashArray: '10, 10',
+              weight: 3,
+              opacity: 0.6
+            }).addTo(map);
+          }
+
           function centerOn(lat, lng, zoom) {
             map.setView([lat, lng], zoom || map.getZoom());
           }
@@ -89,18 +97,17 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
             }));
           });
 
-          // Ready signal
           window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'ready' }));
         </script>
       </body>
     </html>
   `;
 
-  // Sync places when they change
+  // Sync markers
   useEffect(() => {
     const placesWithMeta = places.map(p => {
       const cat = getCategoryById(p.category);
-      return { ...p, color: cat.color, icon: cat.label.substring(0, 2) }; // Simplistic icon for now
+      return { ...p, color: cat.color, icon: cat.label.substring(0, 2) };
     });
     const script = `if (typeof updateMarkers === 'function') updateMarkers('${JSON.stringify(placesWithMeta).replace(/'/g, "\\'")}');`;
     webViewRef.current?.injectJavaScript(script);
@@ -114,7 +121,19 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
     }
   }, [userLocation]);
 
-  // Sync selected place
+  // Sync trajectory
+  useEffect(() => {
+    if (selectedPlace && userLocation && webViewRef.current) {
+      const script = `if (typeof drawTrajectory === 'function') drawTrajectory(${userLocation.latitude}, ${userLocation.longitude}, ${selectedPlace.lat}, ${selectedPlace.lng});`;
+      webViewRef.current?.injectJavaScript(script);
+    } else if (!selectedPlace && routeLineExists() && webViewRef.current) {
+       webViewRef.current?.injectJavaScript(`if (routeLine) map.removeLayer(routeLine); routeLine = null;`);
+    }
+  }, [selectedPlace, userLocation]);
+
+  const routeLineExists = () => true; // Helper
+
+  // Sync initial view or center
   useEffect(() => {
     if (selectedPlace && webViewRef.current) {
       const script = `if (typeof centerOn === 'function') centerOn(${selectedPlace.lat}, ${selectedPlace.lng}, 15);`;
@@ -130,7 +149,7 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
       } else if (type === 'onMapLongPress') {
         onMapLongPress(payload);
       } else if (type === 'ready') {
-        // Initial sync
+        // Full initial sync
         const placesWithMeta = places.map(p => {
           const cat = getCategoryById(p.category);
           return { ...p, color: cat.color, icon: cat.label.substring(0, 2) };
@@ -164,7 +183,8 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
         javaScriptEnabled={true}
         domStorageEnabled={true}
         startInLoadingState={true}
-        renderLoading={() => <View style={styles.loading}><Text>Chargement de la carte...</Text></View>}
+        userAgent="Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
+        renderLoading={() => <View style={styles.loading}><Text style={{color: '#64748b'}}>Chargement de la carte...</Text></View>}
       />
 
       <TouchableOpacity style={styles.locateBtn} onPress={centerOnUser}>
@@ -178,6 +198,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     overflow: 'hidden',
+    backgroundColor: '#fff',
   },
   map: {
     flex: 1,

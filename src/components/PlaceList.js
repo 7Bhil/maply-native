@@ -215,10 +215,11 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#1e293b',
   },
   category: {
     fontSize: 12,
-    color: '#666',
+    color: '#64748b',
   },
   actions: {
     flexDirection: 'row',

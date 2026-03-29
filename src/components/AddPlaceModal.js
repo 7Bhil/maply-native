@@ -270,6 +270,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 5,
+    color: '#1e293b',
   },
   coords: {
     fontSize: 12,
