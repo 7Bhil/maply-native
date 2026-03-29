@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "native-app",
-    "slug": "native-app",
-    "version": "1.0.0",
+    "name": "Maply",
+    "slug": "maply-native",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -26,7 +26,7 @@
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.RECORD_AUDIO"
       ],
-      "package": "com.anonymous.nativeapp",
+      "package": "com.bhil.maply",
       "config": {
         "googleMaps": {
           "apiKey": "METTRE_TA_CLE_GOOGLE_MAPS_ICI"

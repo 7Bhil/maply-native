@@ -93,7 +93,7 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
           map.on('contextmenu', (e) => {
             window.ReactNativeWebView.postMessage(JSON.stringify({ 
               type: 'onMapLongPress', 
-              payload: { latitude: e.latlng.lat, longitude: e.latlng.lng } 
+              payload: { lat: e.latlng.lat, lng: e.latlng.lng } 
             }));
           });
 

@@ -25,7 +25,7 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose, ini
       setRating(initialData.rating || 3);
       setIsFavorite(initialData.isFavorite || false);
       setPhoto(initialData.image || null);
-      setCustomCoords({ latitude: initialData.lat, longitude: initialData.lng });
+      setCustomCoords({ lat: initialData.lat, lng: initialData.lng });
       setIsPublic(isFork ? false : (initialData.is_public ?? true));
     } else if (visible && !initialData) {
       setName('');
@@ -94,8 +94,8 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose, ini
       name: name.trim(),
       description: description.trim(),
       category,
-      lat: customCoords?.latitude || coords?.latitude,
-      lng: customCoords?.longitude || coords?.longitude,
+      lat: customCoords?.lat || coords?.lat,
+      lng: customCoords?.lng || coords?.lng,
       rating,
       isFavorite,
       image: photo,
@@ -117,7 +117,7 @@ export default function AddPlaceModal({ visible, coords, onConfirm, onClose, ini
         <View style={styles.modal}>
           <Text style={styles.title}>{isFork ? 'Personnaliser ce lieu' : (initialData ? 'Modifier le lieu' : 'Ajouter un lieu')}</Text>
           <Text style={styles.coords}>
-            {(customCoords || coords) ? `📍 ${(customCoords?.latitude || coords?.latitude)?.toFixed(4)}, ${(customCoords?.longitude || coords?.longitude)?.toFixed(4)}` : (isFork ? 'Enregistrez dans vos lieux privés' : 'Modifiez les informations ci-dessous')}
+            {(customCoords || coords) ? `📍 ${(customCoords?.lat || coords?.lat)?.toFixed(4)}, ${(customCoords?.lng || coords?.lng)?.toFixed(4)}` : (isFork ? 'Enregistrez dans vos lieux privés' : 'Modifiez les informations ci-dessous')}
           </Text>
 
           <View style={{ marginBottom: 15 }}>
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
-    maxHeight: '90%',
+    height: '90%',
   },
   title: {
     fontSize: 20,
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   form: {
-    flex: 1,
+    flexGrow: 1,
     marginBottom: 10,
   },
   label: {
