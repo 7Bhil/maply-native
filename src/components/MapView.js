@@ -5,12 +5,13 @@ import { WebView } from 'react-native-webview';
 import * as Location from 'expo-location';
 import { CATEGORIES } from '../data/categories';
 
-export default function AppMapView({ places, selectedPlace, onSelectPlace, onMapLongPress, userLocation }) {
+export default function AppMapView({ places, selectedPlace, onSelectPlace, onMapLongPress, userLocation, liveUsers }) {
   const webViewRef = useRef(null);
+  const [loadingLoc, setLoadingLoc] = useState(false);
 
   const getCategoryById = (id) => CATEGORIES.find(c => c.id === id) || CATEGORIES[CATEGORIES.length - 1];
 
-  // HTML content for Leaflet Map
+  // HTML content for Leaflet Map - Use simple quotes for internal JS to avoid backtick nesting hell
   const mapHtml = `
     <!DOCTYPE html>
     <html>
@@ -29,6 +30,15 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
           }
           .marker-pin i { transform: rotate(45deg); color: white; font-style: normal; font-size: 14px; }
+          .user-label {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-weight: bold;
+            color: #1e293b;
+            padding: 2px 6px;
+            border-radius: 4px;
+          }
         </style>
       </head>
       <body>
@@ -36,33 +46,61 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
         <script>
           var map = L.map('map', { zoomControl: false }).setView([48.8566, 2.3522], 13);
           
-          // CartoDB Voyager - beautiful and less restrictive
           L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             maxZoom: 20,
-            attribution: '© OpenStreetMap © CARTO'
+            attribution: '&copy; OpenStreetMap'
           }).addTo(map);
 
           var markers = {};
+          var liveMarkers = {};
           var userMarker = null;
           var routeLine = null;
 
+          function updateLiveUsers(usersJson) {
+            var users = JSON.parse(usersJson);
+            Object.keys(liveMarkers).forEach(function(u) {
+               var found = false;
+               for(var i=0; i<users.length; i++) { if(users[i].username === u) { found = true; break; } }
+               if (!found) {
+                  map.removeLayer(liveMarkers[u]);
+                  delete liveMarkers[u];
+               }
+            });
+
+            users.forEach(function(user) {
+              if (liveMarkers[user.username]) {
+                liveMarkers[user.username].setLatLng([user.lat, user.lng]);
+              } else {
+                var icon = L.divIcon({
+                  className: 'live-marker',
+                  html: '<div style="width: 12px; height: 12px; background: #f43f5e; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 10px #f43f5e;"></div>',
+                  iconSize: [12, 12],
+                  iconAnchor: [6, 6]
+                });
+                var m = L.marker([user.lat, user.lng], { icon: icon }).addTo(map);
+                m.bindTooltip(user.username, { permanent: true, direction: 'top', className: 'user-label', offset: [0, -10] });
+                liveMarkers[user.username] = m;
+              }
+            });
+          }
+
           function updateMarkers(placesJson) {
-            const places = JSON.parse(placesJson);
-            Object.values(markers).forEach(m => map.removeLayer(m));
+            var places = JSON.parse(placesJson);
+            Object.values(markers).forEach(function(m) { map.removeLayer(m); });
             markers = {};
 
-            places.forEach(place => {
+            places.forEach(function(place) {
               if (!place.lat || !place.lng) return;
               
-              const icon = L.divIcon({
+              var icon = L.divIcon({
                 className: 'custom-div-icon',
-                html: \`<div class="marker-pin" style="background-color: \${place.color || '#6366f1'}"><i>\${place.icon || '📍'}</i></div>\`,
+                html: '<div class="marker-pin" style="background-color: ' + (place.color || '#6366f1') + '"><i>' + (place.icon || '📍') + '</i></div>',
                 iconSize: [30, 42],
                 iconAnchor: [15, 42]
               });
 
-              const m = L.marker([place.lat, place.lng], { icon: icon }).addTo(map);
-              m.on('click', () => {
+              var m = L.marker([place.lat, place.lng], { icon: icon }).addTo(map);
+              m.on('click', function() {
                 window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'onSelectPlace', payload: place }));
               });
               markers[place.id] = m;
@@ -90,7 +128,7 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
             map.setView([lat, lng], zoom || map.getZoom());
           }
 
-          map.on('contextmenu', (e) => {
+          map.on('contextmenu', function(e) {
             window.ReactNativeWebView.postMessage(JSON.stringify({ 
               type: 'onMapLongPress', 
               payload: { lat: e.latlng.lat, lng: e.latlng.lng } 
@@ -113,9 +151,17 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
     webViewRef.current?.injectJavaScript(script);
   }, [places]);
 
+  // Sync live users
+  useEffect(() => {
+    if (liveUsers && webViewRef.current) {
+      const script = `if (typeof updateLiveUsers === 'function') updateLiveUsers('${JSON.stringify(liveUsers).replace(/'/g, "\\'")}');`;
+      webViewRef.current?.injectJavaScript(script);
+    }
+  }, [liveUsers]);
+
   // Sync user location
   useEffect(() => {
-    if (userLocation) {
+    if (userLocation && webViewRef.current) {
       const script = `if (typeof updateUserLocation === 'function') updateUserLocation(${userLocation.latitude}, ${userLocation.longitude});`;
       webViewRef.current?.injectJavaScript(script);
     }
@@ -126,12 +172,10 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
     if (selectedPlace && userLocation && webViewRef.current) {
       const script = `if (typeof drawTrajectory === 'function') drawTrajectory(${userLocation.latitude}, ${userLocation.longitude}, ${selectedPlace.lat}, ${selectedPlace.lng});`;
       webViewRef.current?.injectJavaScript(script);
-    } else if (!selectedPlace && routeLineExists() && webViewRef.current) {
-       webViewRef.current?.injectJavaScript(`if (routeLine) map.removeLayer(routeLine); routeLine = null;`);
+    } else if (!selectedPlace && webViewRef.current) {
+       webViewRef.current?.injectJavaScript('if (typeof routeLine !== "undefined" && routeLine) { map.removeLayer(routeLine); routeLine = null; }');
     }
   }, [selectedPlace, userLocation]);
-
-  const routeLineExists = () => true; // Helper
 
   // Sync initial view or center
   useEffect(() => {
@@ -149,7 +193,6 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
       } else if (type === 'onMapLongPress') {
         onMapLongPress(payload);
       } else if (type === 'ready') {
-        // Full initial sync
         const placesWithMeta = places.map(p => {
           const cat = getCategoryById(p.category);
           return { ...p, color: cat.color, icon: cat.label.substring(0, 2) };
@@ -158,6 +201,9 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
         if (userLocation) {
           webViewRef.current?.injectJavaScript(`updateUserLocation(${userLocation.latitude}, ${userLocation.longitude});`);
         }
+        if (liveUsers) {
+          webViewRef.current?.injectJavaScript(`updateLiveUsers('${JSON.stringify(liveUsers).replace(/'/g, "\\'")}');`);
+        }
       }
     } catch (e) {
       console.error('WebView Message Error:', e);
@@ -165,11 +211,28 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
   };
 
   const centerOnUser = async () => {
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') return;
-    let location = await Location.getCurrentPositionAsync({});
-    const script = `if (typeof centerOn === 'function') centerOn(${location.coords.latitude}, ${location.coords.longitude}, 15);`;
-    webViewRef.current?.injectJavaScript(script);
+    setLoadingLoc(true);
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+          setLoadingLoc(false);
+          return;
+      }
+
+      // Try last known first for instant feedback
+      const lastKnown = await Location.getLastKnownPositionAsync({});
+      if (lastKnown) {
+        webViewRef.current?.injectJavaScript(`centerOn(${lastKnown.coords.latitude}, ${lastKnown.coords.longitude}, 15);`);
+      }
+
+      // Then get a fresh one but with a timeout
+      const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      webViewRef.current?.injectJavaScript(`centerOn(${location.coords.latitude}, ${location.coords.longitude}, 15);`);
+    } catch (e) {
+      console.log('Location error:', e);
+    } finally {
+      setLoadingLoc(false);
+    }
   };
 
   return (
@@ -187,8 +250,12 @@ export default function AppMapView({ places, selectedPlace, onSelectPlace, onMap
         renderLoading={() => <View style={styles.loading}><Text style={{color: '#64748b'}}>Chargement de la carte...</Text></View>}
       />
 
-      <TouchableOpacity style={styles.locateBtn} onPress={centerOnUser}>
-        <Ionicons name="location" size={20} color="#6366f1" />
+      <TouchableOpacity 
+        style={styles.locateBtn} 
+        onPress={centerOnUser}
+        disabled={loadingLoc}
+      >
+        <Ionicons name="location" size={20} color={loadingLoc ? "#94a3b8" : "#6366f1"} />
       </TouchableOpacity>
     </View>
   );
