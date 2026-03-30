@@ -39,7 +39,7 @@ export default function Auth() {
           if (profileError) console.error('Profile creation error:', profileError);
         }
 
-        setSuccessMsg('Inscription réussie ! Vérifiez vos emails si nécessaire.');
+        setSuccessMsg('Inscription réussie ! Vous pouvez maintenant vous connecter.');
       }
     } catch (error) {
       setErrorMsg(error.message);
